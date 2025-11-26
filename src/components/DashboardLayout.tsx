@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
-import { Eye, LayoutDashboard, Package, Users, ShoppingCart, ClipboardList, FileText, TrendingUp, LogOut, Menu, X } from "lucide-react";
+import { Eye, LayoutDashboard, Package, Users, ShoppingCart, ClipboardList, FileText, TrendingUp, DollarSign, LogOut, Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -21,6 +21,7 @@ const DashboardLayout = () => {
     { icon: Package, label: "Products", path: "/dashboard/products" },
     { icon: Users, label: "Suppliers", path: "/dashboard/suppliers" },
     { icon: ShoppingCart, label: "Purchase Orders", path: "/dashboard/purchases" },
+    { icon: DollarSign, label: "Sales", path: "/dashboard/sales" },
     { icon: ClipboardList, label: "Customers", path: "/dashboard/customers" },
     { icon: FileText, label: "Prescriptions", path: "/dashboard/prescriptions" },
     { icon: TrendingUp, label: "Analytics", path: "/dashboard/analytics" },
