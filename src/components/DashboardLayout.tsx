@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
 import { useAuth } from "@/lib/supabase";
-import { Eye, LayoutDashboard, Package, Users, ShoppingCart, ClipboardList, FileText, TrendingUp, DollarSign, LogOut, Menu, X, UserCog } from "lucide-react";
+import { Eye, LayoutDashboard, Package, Users, ShoppingCart, ClipboardList, FileText, TrendingUp, DollarSign, LogOut, Menu, X, UserCog, Receipt } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -44,6 +44,7 @@ const DashboardLayout = () => {
     { icon: DollarSign, label: "Sales", path: "/dashboard/sales" },
     { icon: ClipboardList, label: "Customers", path: "/dashboard/customers" },
     { icon: FileText, label: "Prescriptions", path: "/dashboard/prescriptions" },
+    { icon: Receipt, label: "Expenses", path: "/dashboard/expenses" },
     { icon: TrendingUp, label: "Analytics", path: "/dashboard/analytics" },
   ];
 
