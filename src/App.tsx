@@ -16,6 +16,7 @@ import Sales from "./pages/Sales";
 import Analytics from "./pages/Analytics";
 import Prescriptions from "./pages/Prescriptions";
 import Users from "./pages/Users";
+import Expenses from "./pages/Expenses";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -64,6 +65,7 @@ const App = () => (
               <Route path="sales" element={<Sales />} />
               <Route path="analytics" element={<Analytics />} />
               <Route path="prescriptions" element={<Prescriptions />} />
+              <Route path="expenses" element={<Expenses />} />
               <Route path="users" element={<Users />} />
             </Route>
             <Route path="*" element={<NotFound />} />
