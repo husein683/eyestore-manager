@@ -17,8 +17,12 @@ const Prescriptions = () => {
   const [customers, setCustomers] = useState<any[]>([]);
   const [search, setSearch] = useState("");
   const [open, setOpen] = useState(false);
+  const [isNewCustomer, setIsNewCustomer] = useState(false);
   const [formData, setFormData] = useState({
     customer_id: "",
+    customer_name: "",
+    customer_phone: "",
+    customer_email: "",
     prescription_date: new Date().toISOString().split("T")[0],
     right_eye_sphere: "",
     right_eye_cylinder: "",
@@ -78,8 +82,36 @@ const Prescriptions = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    let customerId = formData.customer_id;
+
+    // If creating new customer, add them first
+    if (isNewCustomer && formData.customer_name && formData.customer_phone) {
+      const { data: newCustomer, error: customerError } = await supabase
+        .from("customers")
+        .insert([{
+          name: formData.customer_name,
+          phone: formData.customer_phone,
+          email: formData.customer_email || null,
+        }])
+        .select()
+        .single();
+
+      if (customerError) {
+        toast.error("Failed to create customer: " + customerError.message);
+        return;
+      }
+
+      customerId = newCustomer.id;
+      toast.success("Customer created successfully!");
+    }
+
+    if (!customerId) {
+      toast.error("Please select or create a customer");
+      return;
+    }
+
     const prescriptionData = {
-      customer_id: formData.customer_id,
+      customer_id: customerId,
       prescription_date: formData.prescription_date,
       right_eye_sphere: formData.right_eye_sphere ? parseFloat(formData.right_eye_sphere) : null,
       right_eye_cylinder: formData.right_eye_cylinder ? parseFloat(formData.right_eye_cylinder) : null,
@@ -102,12 +134,17 @@ const Prescriptions = () => {
       setOpen(false);
       resetForm();
       fetchPrescriptions();
+      fetchCustomers();
     }
   };
 
   const resetForm = () => {
+    setIsNewCustomer(false);
     setFormData({
       customer_id: "",
+      customer_name: "",
+      customer_phone: "",
+      customer_email: "",
       prescription_date: new Date().toISOString().split("T")[0],
       right_eye_sphere: "",
       right_eye_cylinder: "",
@@ -143,21 +180,63 @@ const Prescriptions = () => {
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2 col-span-2">
-                  <Label>Customer *</Label>
-                  <Select
-                    value={formData.customer_id}
-                    onValueChange={(val) => setFormData({ ...formData, customer_id: val })}
-                    required
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select customer" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {customers.map((c) => (
-                        <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <div className="flex items-center justify-between mb-2">
+                    <Label>Customer *</Label>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        setIsNewCustomer(!isNewCustomer);
+                        setFormData({ ...formData, customer_id: "", customer_name: "", customer_phone: "", customer_email: "" });
+                      }}
+                    >
+                      {isNewCustomer ? "Select Existing" : "Add New Customer"}
+                    </Button>
+                  </div>
+                  
+                  {!isNewCustomer ? (
+                    <Select
+                      value={formData.customer_id}
+                      onValueChange={(val) => setFormData({ ...formData, customer_id: val })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select customer" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {customers.map((c) => (
+                          <SelectItem key={c.id} value={c.id}>{c.name} - {c.phone}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  ) : (
+                    <div className="space-y-3 border rounded-lg p-3">
+                      <div className="space-y-2">
+                        <Label>Customer Name *</Label>
+                        <Input
+                          value={formData.customer_name}
+                          onChange={(e) => setFormData({ ...formData, customer_name: e.target.value })}
+                          required
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Phone *</Label>
+                        <Input
+                          value={formData.customer_phone}
+                          onChange={(e) => setFormData({ ...formData, customer_phone: e.target.value })}
+                          required
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Email (Optional)</Label>
+                        <Input
+                          type="email"
+                          value={formData.customer_email}
+                          onChange={(e) => setFormData({ ...formData, customer_email: e.target.value })}
+                        />
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 <div className="space-y-2">

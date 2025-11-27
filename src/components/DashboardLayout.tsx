@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
-import { Eye, LayoutDashboard, Package, Users, ShoppingCart, ClipboardList, FileText, TrendingUp, DollarSign, LogOut, Menu, X } from "lucide-react";
+import { useAuth } from "@/lib/supabase";
+import { Eye, LayoutDashboard, Package, Users, ShoppingCart, ClipboardList, FileText, TrendingUp, DollarSign, LogOut, Menu, X, UserCog } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -9,6 +10,25 @@ import { cn } from "@/lib/utils";
 const DashboardLayout = () => {
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const { user } = useAuth();
+
+  useEffect(() => {
+    checkAdminStatus();
+  }, [user]);
+
+  const checkAdminStatus = async () => {
+    if (!user) return;
+    
+    const { data } = await supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", user.id)
+      .eq("role", "admin")
+      .single();
+    
+    setIsAdmin(!!data);
+  };
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -25,6 +45,10 @@ const DashboardLayout = () => {
     { icon: ClipboardList, label: "Customers", path: "/dashboard/customers" },
     { icon: FileText, label: "Prescriptions", path: "/dashboard/prescriptions" },
     { icon: TrendingUp, label: "Analytics", path: "/dashboard/analytics" },
+  ];
+
+  const adminMenuItems = [
+    { icon: UserCog, label: "User Management", path: "/dashboard/users" },
   ];
 
   return (
@@ -82,6 +106,29 @@ const DashboardLayout = () => {
                 {item.label}
               </Button>
             ))}
+            
+            {isAdmin && (
+              <>
+                <div className="my-2 border-t border-sidebar-border" />
+                <div className="px-3 py-2 text-xs font-semibold text-sidebar-foreground/60">
+                  ADMIN
+                </div>
+                {adminMenuItems.map((item) => (
+                  <Button
+                    key={item.path}
+                    variant="ghost"
+                    className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                    onClick={() => {
+                      navigate(item.path);
+                      setSidebarOpen(false);
+                    }}
+                  >
+                    <item.icon className="w-5 h-5 mr-3" />
+                    {item.label}
+                  </Button>
+                ))}
+              </>
+            )}
           </nav>
 
           <div className="p-4 border-t border-sidebar-border">
