@@ -16,7 +16,7 @@ const Sales = () => {
   const [customers, setCustomers] = useState<any[]>([]);
   const [products, setProducts] = useState<any[]>([]);
   const [open, setOpen] = useState(false);
-  const [saleItems, setSaleItems] = useState<any[]>([{ product_id: "", quantity: "", discount: "0" }]);
+  const [saleItems, setSaleItems] = useState<any[]>([{ product_type: "", product_id: "", quantity: "", discount: "0" }]);
   const [formData, setFormData] = useState({
     customer_id: "",
     payment_method: "cash",
@@ -55,12 +55,12 @@ const Sales = () => {
   };
 
   const fetchProducts = async () => {
-    const { data } = await supabase.from("products").select("id, name, selling_price, stock_quantity");
+    const { data } = await supabase.from("products").select("id, name, product_type, selling_price, stock_quantity");
     setProducts(data || []);
   };
 
   const addItemRow = () => {
-    setSaleItems([...saleItems, { product_id: "", quantity: "", discount: "0" }]);
+    setSaleItems([...saleItems, { product_type: "", product_id: "", quantity: "", discount: "0" }]);
   };
 
   const removeItemRow = (index: number) => {
@@ -70,6 +70,10 @@ const Sales = () => {
   const updateItemRow = (index: number, field: string, value: string) => {
     const newItems = [...saleItems];
     newItems[index][field] = value;
+    // Reset product selection when category changes
+    if (field === "product_type") {
+      newItems[index].product_id = "";
+    }
     setSaleItems(newItems);
   };
 
@@ -172,7 +176,7 @@ const Sales = () => {
       payment_method: "cash",
       notes: "",
     });
-    setSaleItems([{ product_id: "", quantity: "", discount: "0" }]);
+    setSaleItems([{ product_type: "", product_id: "", quantity: "", discount: "0" }]);
   };
 
   return (
@@ -247,17 +251,37 @@ const Sales = () => {
                 <div className="space-y-2">
                   {saleItems.map((item, index) => {
                     const product = products.find(p => p.id === item.product_id);
+                    const categoryProducts = products.filter(p => p.product_type === item.product_type);
+                    
                     return (
                       <div key={index} className="flex gap-2 items-center">
                         <Select
+                          value={item.product_type}
+                          onValueChange={(val) => updateItemRow(index, "product_type", val)}
+                        >
+                          <SelectTrigger className="w-48">
+                            <SelectValue placeholder="Category" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="eyeglasses">Eyeglasses</SelectItem>
+                            <SelectItem value="sunglasses">Sunglasses</SelectItem>
+                            <SelectItem value="contact_lenses">Contact Lenses</SelectItem>
+                            <SelectItem value="accessories">Accessories</SelectItem>
+                            <SelectItem value="cleaning_solutions">Cleaning Solutions</SelectItem>
+                            <SelectItem value="custom_eyesight">Custom Eyesight</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        
+                        <Select
                           value={item.product_id}
                           onValueChange={(val) => updateItemRow(index, "product_id", val)}
+                          disabled={!item.product_type}
                         >
                           <SelectTrigger className="flex-1">
                             <SelectValue placeholder="Select product" />
                           </SelectTrigger>
                           <SelectContent>
-                            {products.map((p) => (
+                            {categoryProducts.map((p) => (
                               <SelectItem key={p.id} value={p.id}>
                                 {p.name} (Stock: {p.stock_quantity})
                               </SelectItem>
