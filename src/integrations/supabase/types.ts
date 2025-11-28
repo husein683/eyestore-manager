@@ -47,6 +47,113 @@ export type Database = {
         }
         Relationships: []
       }
+      employee_payments: {
+        Row: {
+          amount: number
+          created_at: string
+          created_by: string
+          employee_id: string
+          id: string
+          notes: string | null
+          payment_date: string
+          payment_method: string | null
+          payment_type: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          created_by: string
+          employee_id: string
+          id?: string
+          notes?: string | null
+          payment_date: string
+          payment_method?: string | null
+          payment_type: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          created_by?: string
+          employee_id?: string
+          id?: string
+          notes?: string | null
+          payment_date?: string
+          payment_method?: string | null
+          payment_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "employee_payments_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "employee_payments_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      employees: {
+        Row: {
+          address: string | null
+          base_salary: number
+          created_at: string
+          created_by: string
+          email: string | null
+          full_name: string
+          hire_date: string
+          id: string
+          notes: string | null
+          phone: string | null
+          position: string | null
+          salary_type: string
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          base_salary: number
+          created_at?: string
+          created_by: string
+          email?: string | null
+          full_name: string
+          hire_date: string
+          id?: string
+          notes?: string | null
+          phone?: string | null
+          position?: string | null
+          salary_type: string
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          base_salary?: number
+          created_at?: string
+          created_by?: string
+          email?: string | null
+          full_name?: string
+          hire_date?: string
+          id?: string
+          notes?: string | null
+          phone?: string | null
+          position?: string | null
+          salary_type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "employees_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       expenses: {
         Row: {
           amount: number
