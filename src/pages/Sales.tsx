@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -8,14 +8,18 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, ShoppingCart, X, Trash2 } from "lucide-react";
+import { Plus, ShoppingCart, X, Printer } from "lucide-react";
 import { toast } from "sonner";
+import SaleReceipt from "@/components/SaleReceipt";
 
 const Sales = () => {
   const [sales, setSales] = useState<any[]>([]);
   const [customers, setCustomers] = useState<any[]>([]);
   const [products, setProducts] = useState<any[]>([]);
   const [open, setOpen] = useState(false);
+  const [receiptOpen, setReceiptOpen] = useState(false);
+  const [selectedSale, setSelectedSale] = useState<any>(null);
+  const receiptRef = useRef<HTMLDivElement>(null);
   const [saleItems, setSaleItems] = useState<any[]>([{ product_type: "", product_id: "", quantity: "", discount: "0" }]);
   const [formData, setFormData] = useState({
     customer_id: "",
@@ -34,7 +38,7 @@ const Sales = () => {
       .from("sales")
       .select(`
         *,
-        customer:customers(name),
+        customer:customers(name, phone, email, address),
         items:sale_items(
           *,
           product:products(name)
@@ -177,6 +181,80 @@ const Sales = () => {
       notes: "",
     });
     setSaleItems([{ product_type: "", product_id: "", quantity: "", discount: "0" }]);
+  };
+
+  const handlePrintReceipt = (sale: any) => {
+    setSelectedSale(sale);
+    setReceiptOpen(true);
+  };
+
+  const printReceipt = () => {
+    const printContent = receiptRef.current;
+    if (!printContent) return;
+
+    const printWindow = window.open("", "_blank");
+    if (!printWindow) {
+      toast.error("Please allow popups to print receipt");
+      return;
+    }
+
+    printWindow.document.write(`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Receipt - ${selectedSale?.sale_number}</title>
+          <style>
+            * { margin: 0; padding: 0; box-sizing: border-box; }
+            body { font-family: 'Courier New', monospace; font-size: 12px; }
+            .receipt { width: 80mm; max-width: 80mm; margin: 0 auto; padding: 10px; }
+            .text-center { text-align: center; }
+            .text-right { text-align: right; }
+            .text-left { text-align: left; }
+            .font-bold { font-weight: bold; }
+            .font-semibold { font-weight: 600; }
+            .uppercase { text-transform: uppercase; }
+            .border-dashed { border-bottom: 1px dashed #666; }
+            .py-1 { padding: 2px 0; }
+            .pb-3 { padding-bottom: 8px; }
+            .mb-3 { margin-bottom: 8px; }
+            .pb-4 { padding-bottom: 12px; }
+            .mb-4 { margin-bottom: 12px; }
+            .mt-1 { margin-top: 4px; }
+            .mt-3 { margin-top: 8px; }
+            .pt-1 { padding-top: 4px; }
+            .pt-2 { padding-top: 6px; }
+            .space-y-1 > * + * { margin-top: 4px; }
+            .flex { display: flex; justify-content: space-between; }
+            .text-lg { font-size: 16px; }
+            .text-sm { font-size: 11px; }
+            .text-xs { font-size: 10px; }
+            .text-gray { color: #666; }
+            table { width: 100%; border-collapse: collapse; }
+            th, td { padding: 2px 0; }
+            .border-t { border-top: 1px solid #ccc; }
+            .border-b { border-bottom: 1px solid #eee; }
+            .capitalize { text-transform: capitalize; }
+            .truncate { max-width: 80px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+            @media print {
+              body { width: 80mm; }
+              .receipt { width: 100%; }
+            }
+          </style>
+        </head>
+        <body>
+          <div class="receipt">
+            ${printContent.innerHTML}
+          </div>
+          <script>
+            window.onload = function() {
+              window.print();
+              window.onafterprint = function() { window.close(); }
+            }
+          </script>
+        </body>
+      </html>
+    `);
+    printWindow.document.close();
   };
 
   return (
@@ -354,7 +432,17 @@ const Sales = () => {
                   Payment: {sale.payment_method}
                 </p>
               </div>
-              <p className="text-2xl font-bold text-success">${Number(sale.total_amount).toFixed(2)}</p>
+              <div className="flex flex-col items-end gap-2">
+                <p className="text-2xl font-bold text-success">${Number(sale.total_amount).toFixed(2)}</p>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => handlePrintReceipt(sale)}
+                >
+                  <Printer className="w-4 h-4 mr-1" />
+                  Print Receipt
+                </Button>
+              </div>
             </div>
             
             <Table>
@@ -387,6 +475,31 @@ const Sales = () => {
           </Card>
         )}
       </div>
+
+      {/* Receipt Dialog */}
+      <Dialog open={receiptOpen} onOpenChange={setReceiptOpen}>
+        <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Sale Receipt</DialogTitle>
+          </DialogHeader>
+          {selectedSale && (
+            <>
+              <div className="border rounded-lg overflow-hidden">
+                <SaleReceipt ref={receiptRef} sale={selectedSale} />
+              </div>
+              <div className="flex gap-2 mt-4">
+                <Button onClick={printReceipt} className="flex-1">
+                  <Printer className="w-4 h-4 mr-2" />
+                  Print Receipt
+                </Button>
+                <Button variant="outline" onClick={() => setReceiptOpen(false)}>
+                  Close
+                </Button>
+              </div>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
