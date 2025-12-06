@@ -19,6 +19,7 @@ const Sales = () => {
   const [open, setOpen] = useState(false);
   const [receiptOpen, setReceiptOpen] = useState(false);
   const [selectedSale, setSelectedSale] = useState<any>(null);
+  const [storeSettings, setStoreSettings] = useState<any>(null);
   const receiptRef = useRef<HTMLDivElement>(null);
   const [saleItems, setSaleItems] = useState<any[]>([{ product_type: "", product_id: "", quantity: "", discount: "0" }]);
   const [formData, setFormData] = useState({
@@ -31,7 +32,16 @@ const Sales = () => {
     fetchSales();
     fetchCustomers();
     fetchProducts();
+    fetchStoreSettings();
   }, []);
+
+  const fetchStoreSettings = async () => {
+    const { data } = await supabase
+      .from("store_settings")
+      .select("*")
+      .maybeSingle();
+    if (data) setStoreSettings(data);
+  };
 
   const fetchSales = async () => {
     const { data, error } = await supabase
@@ -485,7 +495,14 @@ const Sales = () => {
           {selectedSale && (
             <>
               <div className="border rounded-lg overflow-hidden">
-                <SaleReceipt ref={receiptRef} sale={selectedSale} />
+                <SaleReceipt 
+                  ref={receiptRef} 
+                  sale={selectedSale}
+                  shopName={storeSettings?.store_name}
+                  shopAddress={storeSettings?.address}
+                  shopPhone={storeSettings?.phone}
+                  shopEmail={storeSettings?.email}
+                />
               </div>
               <div className="flex gap-2 mt-4">
                 <Button onClick={printReceipt} className="flex-1">
