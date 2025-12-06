@@ -374,7 +374,7 @@ const Employees = () => {
                       <TableCell className="font-medium">{employee.full_name}</TableCell>
                       <TableCell>{employee.position || "N/A"}</TableCell>
                       <TableCell className="capitalize">{employee.salary_type}</TableCell>
-                      <TableCell>${employee.base_salary.toFixed(2)}</TableCell>
+                      <TableCell>Rs.{employee.base_salary.toFixed(0)}</TableCell>
                       <TableCell>{employee.phone || "N/A"}</TableCell>
                       <TableCell>{employee.email || "N/A"}</TableCell>
                       <TableCell>{new Date(employee.hire_date).toLocaleDateString()}</TableCell>
@@ -516,7 +516,7 @@ const Employees = () => {
                     <TableRow key={payment.id}>
                       <TableCell className="font-medium">{payment.employees.full_name}</TableCell>
                       <TableCell>{new Date(payment.payment_date).toLocaleDateString()}</TableCell>
-                      <TableCell>${payment.amount.toFixed(2)}</TableCell>
+                      <TableCell>Rs.{payment.amount.toFixed(0)}</TableCell>
                       <TableCell className="capitalize">{payment.payment_type}</TableCell>
                       <TableCell className="capitalize">{payment.payment_method || "N/A"}</TableCell>
                       <TableCell>{payment.notes || "N/A"}</TableCell>
@@ -547,7 +547,7 @@ const Employees = () => {
 
               <div className="p-4 bg-primary/10 rounded-lg">
                 <p className="text-sm text-muted-foreground">Total Payments</p>
-                <p className="text-3xl font-bold text-primary">${calculateMonthlyTotal().toFixed(2)}</p>
+                <p className="text-3xl font-bold text-primary">Rs.{calculateMonthlyTotal().toFixed(0)}</p>
               </div>
 
               <Table>
@@ -565,7 +565,7 @@ const Employees = () => {
                     <TableRow key={payment.id}>
                       <TableCell>{new Date(payment.payment_date).toLocaleDateString()}</TableCell>
                       <TableCell>{payment.employees.full_name}</TableCell>
-                      <TableCell>${payment.amount.toFixed(2)}</TableCell>
+                      <TableCell>Rs.{payment.amount.toFixed(0)}</TableCell>
                       <TableCell className="capitalize">{payment.payment_type}</TableCell>
                       <TableCell className="capitalize">{payment.payment_method || "N/A"}</TableCell>
                     </TableRow>

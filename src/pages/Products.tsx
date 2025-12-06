@@ -268,8 +268,8 @@ const Products = () => {
                     <TableCell className="font-mono text-sm">{product.sku}</TableCell>
                     <TableCell className="font-medium">{product.name}</TableCell>
                     <TableCell className="capitalize">{product.product_type.replace("_", " ")}</TableCell>
-                    <TableCell>${Number(product.cost_price).toFixed(2)}</TableCell>
-                    <TableCell className="font-semibold">${Number(product.selling_price).toFixed(2)}</TableCell>
+                    <TableCell>Rs.{Number(product.cost_price).toFixed(0)}</TableCell>
+                    <TableCell className="font-semibold">Rs.{Number(product.selling_price).toFixed(0)}</TableCell>
                     <TableCell>{product.stock_quantity}</TableCell>
                     <TableCell>
                       {product.stock_quantity <= product.reorder_level ? (

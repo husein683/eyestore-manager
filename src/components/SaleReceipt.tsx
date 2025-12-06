@@ -30,7 +30,7 @@ interface SaleReceiptProps {
 }
 
 const SaleReceipt = forwardRef<HTMLDivElement, SaleReceiptProps>(
-  ({ sale, shopName = "Optical Shop", shopAddress = "123 Main Street", shopPhone = "+1 234 567 890", shopEmail = "info@opticalshop.com" }, ref) => {
+  ({ sale, shopName = "Naeem Optics", shopAddress = "123 Main Street", shopPhone = "+92 300 1234567", shopEmail = "info@naeemoptics.com" }, ref) => {
     const subtotal = sale.items?.reduce((sum, item) => sum + (item.quantity * Number(item.unit_price)), 0) || 0;
     const totalDiscount = sale.items?.reduce((sum, item) => sum + Number(item.discount || 0), 0) || 0;
 
@@ -91,8 +91,8 @@ const SaleReceipt = forwardRef<HTMLDivElement, SaleReceiptProps>(
                     {item.product?.name || "Unknown"}
                   </td>
                   <td className="text-center py-1">{item.quantity}</td>
-                  <td className="text-right py-1">${Number(item.unit_price).toFixed(2)}</td>
-                  <td className="text-right py-1">${Number(item.total_price).toFixed(2)}</td>
+                  <td className="text-right py-1">Rs.{Number(item.unit_price).toFixed(0)}</td>
+                  <td className="text-right py-1">Rs.{Number(item.total_price).toFixed(0)}</td>
                 </tr>
               ))}
               {sale.items?.filter(item => Number(item.discount) > 0).map((item) => (
@@ -101,7 +101,7 @@ const SaleReceipt = forwardRef<HTMLDivElement, SaleReceiptProps>(
                     Discount on {item.product?.name?.substring(0, 10)}...
                   </td>
                   <td className="text-right py-0.5 text-[10px]">
-                    -${Number(item.discount).toFixed(2)}
+                    -Rs.{Number(item.discount).toFixed(0)}
                   </td>
                 </tr>
               ))}
@@ -113,17 +113,17 @@ const SaleReceipt = forwardRef<HTMLDivElement, SaleReceiptProps>(
         <div className="space-y-1 border-b border-dashed border-gray-400 pb-3 mb-3">
           <div className="flex justify-between">
             <span>Subtotal:</span>
-            <span>${subtotal.toFixed(2)}</span>
+            <span>Rs.{subtotal.toFixed(0)}</span>
           </div>
           {totalDiscount > 0 && (
             <div className="flex justify-between text-gray-600">
               <span>Total Discount:</span>
-              <span>-${totalDiscount.toFixed(2)}</span>
+              <span>-Rs.{totalDiscount.toFixed(0)}</span>
             </div>
           )}
           <div className="flex justify-between font-bold text-sm border-t border-gray-300 pt-1">
             <span>TOTAL:</span>
-            <span>${Number(sale.total_amount).toFixed(2)}</span>
+            <span>Rs.{Number(sale.total_amount).toFixed(0)}</span>
           </div>
         </div>
 

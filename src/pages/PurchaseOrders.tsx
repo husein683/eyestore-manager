@@ -327,7 +327,7 @@ const PurchaseOrders = () => {
                   ))}
                 </div>
                 <div className="text-right font-semibold text-lg">
-                  Total: ${calculateTotal().toFixed(2)}
+                  Total: Rs.{calculateTotal().toFixed(0)}
                 </div>
               </div>
 
@@ -360,7 +360,7 @@ const PurchaseOrders = () => {
                 )}
               </div>
               <div className="text-right">
-                <p className="text-2xl font-bold text-primary">${Number(order.total_amount).toFixed(2)}</p>
+                <p className="text-2xl font-bold text-primary">Rs.{Number(order.total_amount).toFixed(0)}</p>
                 {order.status === "pending" && (
                   <div className="flex gap-2 mt-2">
                     <Button size="sm" onClick={() => markAsReceived(order.id, order.items)}>
@@ -388,8 +388,8 @@ const PurchaseOrders = () => {
                   <TableRow key={item.id}>
                     <TableCell>{item.product?.name}</TableCell>
                     <TableCell>{item.quantity}</TableCell>
-                    <TableCell>${Number(item.unit_price).toFixed(2)}</TableCell>
-                    <TableCell className="font-semibold">${Number(item.total_price).toFixed(2)}</TableCell>
+                    <TableCell>Rs.{Number(item.unit_price).toFixed(0)}</TableCell>
+                    <TableCell className="font-semibold">Rs.{Number(item.total_price).toFixed(0)}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>

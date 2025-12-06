@@ -132,7 +132,7 @@ const Analytics = () => {
             <DollarSign className="w-5 h-5 text-success" />
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-foreground">${stats.totalRevenue.toFixed(2)}</div>
+            <div className="text-3xl font-bold text-foreground">Rs.{stats.totalRevenue.toFixed(0)}</div>
           </CardContent>
         </Card>
 
@@ -152,7 +152,7 @@ const Analytics = () => {
             <TrendingUp className="w-5 h-5 text-accent" />
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-foreground">${stats.avgSaleValue.toFixed(2)}</div>
+            <div className="text-3xl font-bold text-foreground">Rs.{stats.avgSaleValue.toFixed(0)}</div>
           </CardContent>
         </Card>
 
