@@ -375,7 +375,7 @@ const Sales = () => {
                         />
                         {product && (
                           <div className="text-sm font-medium w-20">
-                            ${Number(product.selling_price).toFixed(2)}
+                            Rs.{Number(product.selling_price).toFixed(0)}
                           </div>
                         )}
                         <Input
@@ -387,7 +387,7 @@ const Sales = () => {
                           onChange={(e) => updateItemRow(index, "discount", e.target.value)}
                         />
                         <div className="text-sm font-semibold w-24">
-                          ${getItemTotal(item).toFixed(2)}
+                          Rs.{getItemTotal(item).toFixed(0)}
                         </div>
                         <Button
                           type="button"
@@ -403,7 +403,7 @@ const Sales = () => {
                   })}
                 </div>
                 <div className="text-right font-bold text-2xl text-primary">
-                  Total: ${calculateTotal().toFixed(2)}
+                  Total: Rs.{calculateTotal().toFixed(0)}
                 </div>
               </div>
 
@@ -433,7 +433,7 @@ const Sales = () => {
                 </p>
               </div>
               <div className="flex flex-col items-end gap-2">
-                <p className="text-2xl font-bold text-success">${Number(sale.total_amount).toFixed(2)}</p>
+                <p className="text-2xl font-bold text-success">Rs.{Number(sale.total_amount).toFixed(0)}</p>
                 <Button
                   size="sm"
                   variant="outline"
@@ -460,9 +460,9 @@ const Sales = () => {
                   <TableRow key={item.id}>
                     <TableCell>{item.product?.name}</TableCell>
                     <TableCell>{item.quantity}</TableCell>
-                    <TableCell>${Number(item.unit_price).toFixed(2)}</TableCell>
-                    <TableCell>${Number(item.discount || 0).toFixed(2)}</TableCell>
-                    <TableCell className="font-semibold">${Number(item.total_price).toFixed(2)}</TableCell>
+                    <TableCell>Rs.{Number(item.unit_price).toFixed(0)}</TableCell>
+                    <TableCell>Rs.{Number(item.discount || 0).toFixed(0)}</TableCell>
+                    <TableCell className="font-semibold">Rs.{Number(item.total_price).toFixed(0)}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>

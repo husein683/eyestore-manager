@@ -210,7 +210,7 @@ const Expenses = () => {
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold text-foreground">
-              ${totalMonthlyExpense.toFixed(2)}
+              Rs.{totalMonthlyExpense.toFixed(0)}
             </div>
             <p className="text-xs text-muted-foreground mt-1">
               {format(selectedMonth, "MMMM yyyy")}
@@ -238,7 +238,7 @@ const Expenses = () => {
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold text-foreground">
-              ${monthlyReport.length > 0 ? (totalMonthlyExpense / monthlyReport.length).toFixed(2) : "0.00"}
+              Rs.{monthlyReport.length > 0 ? (totalMonthlyExpense / monthlyReport.length).toFixed(0) : "0"}
             </div>
             <p className="text-xs text-muted-foreground mt-1">Per expense day</p>
           </CardContent>
@@ -287,14 +287,14 @@ const Expenses = () => {
                         >
                           <div>{format(new Date(dayData.date), "MMM dd, yyyy")}</div>
                           <div className="text-sm text-muted-foreground">
-                            Total: ${dayData.total.toFixed(2)}
+                            Total: Rs.{dayData.total.toFixed(0)}
                           </div>
                         </TableCell>
                       )}
                       <TableCell>{expense.category}</TableCell>
                       <TableCell>{expense.description}</TableCell>
                       <TableCell className="font-semibold">
-                        ${Number(expense.amount).toFixed(2)}
+                        Rs.{Number(expense.amount).toFixed(0)}
                       </TableCell>
                       <TableCell className="capitalize">{expense.payment_method}</TableCell>
                     </TableRow>
@@ -334,7 +334,7 @@ const Expenses = () => {
                     <TableCell className="font-medium">{expense.category}</TableCell>
                     <TableCell>{expense.description}</TableCell>
                     <TableCell className="font-semibold">
-                      ${Number(expense.amount).toFixed(2)}
+                      Rs.{Number(expense.amount).toFixed(0)}
                     </TableCell>
                     <TableCell className="capitalize">{expense.payment_method}</TableCell>
                   </TableRow>
