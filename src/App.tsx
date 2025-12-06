@@ -18,6 +18,7 @@ import Prescriptions from "./pages/Prescriptions";
 import Users from "./pages/Users";
 import Expenses from "./pages/Expenses";
 import Employees from "./pages/Employees";
+import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -69,6 +70,7 @@ const App = () => (
               <Route path="expenses" element={<Expenses />} />
               <Route path="users" element={<Users />} />
               <Route path="employees" element={<Employees />} />
+              <Route path="settings" element={<Settings />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
