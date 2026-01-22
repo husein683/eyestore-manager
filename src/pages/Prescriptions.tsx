@@ -1,15 +1,17 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, Eye, Search } from "lucide-react";
+import { Plus, Eye, Search, Printer } from "lucide-react";
 import { toast } from "sonner";
+import { useReactToPrint } from "react-to-print";
+import PrescriptionReceipt from "@/components/PrescriptionReceipt";
 
 const Prescriptions = () => {
   const [prescriptions, setPrescriptions] = useState<any[]>([]);
@@ -17,6 +19,8 @@ const Prescriptions = () => {
   const [customers, setCustomers] = useState<any[]>([]);
   const [search, setSearch] = useState("");
   const [open, setOpen] = useState(false);
+  const [selectedPrescription, setSelectedPrescription] = useState<any>(null);
+  const [storeSettings, setStoreSettings] = useState<any>(null);
   const [isNewCustomer, setIsNewCustomer] = useState(false);
   const [formData, setFormData] = useState({
     customer_id: "",
@@ -36,9 +40,16 @@ const Prescriptions = () => {
     notes: "",
   });
 
+  const printRef = useRef<HTMLDivElement>(null);
+
+  const handlePrint = useReactToPrint({
+    contentRef: printRef,
+  });
+
   useEffect(() => {
     fetchPrescriptions();
     fetchCustomers();
+    fetchStoreSettings();
   }, []);
 
   useEffect(() => {
@@ -64,6 +75,20 @@ const Prescriptions = () => {
   const fetchCustomers = async () => {
     const { data } = await supabase.from("customers").select("*");
     setCustomers(data || []);
+  };
+
+  const fetchStoreSettings = async () => {
+    const { data } = await supabase.from("store_settings").select("*").limit(1).single();
+    if (data) {
+      setStoreSettings(data);
+    }
+  };
+
+  const handlePrintPrescription = (prescription: any) => {
+    setSelectedPrescription(prescription);
+    setTimeout(() => {
+      handlePrint();
+    }, 100);
   };
 
   const filterPrescriptions = () => {
@@ -176,6 +201,9 @@ const Prescriptions = () => {
           <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Add New Prescription</DialogTitle>
+              <DialogDescription>
+                Enter the customer's eye prescription details below.
+              </DialogDescription>
             </DialogHeader>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
@@ -388,12 +416,13 @@ const Prescriptions = () => {
                 <TableHead>Right Eye</TableHead>
                 <TableHead>Left Eye</TableHead>
                 <TableHead>PD</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {filteredPrescriptions.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center text-muted-foreground">
+                  <TableCell colSpan={6} className="text-center text-muted-foreground">
                     No prescriptions found. Add your first prescription!
                   </TableCell>
                 </TableRow>
@@ -428,6 +457,16 @@ const Prescriptions = () => {
                       )}
                     </TableCell>
                     <TableCell>{prescription.pd_distance || "-"}</TableCell>
+                    <TableCell className="text-right">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handlePrintPrescription(prescription)}
+                      >
+                        <Printer className="w-4 h-4 mr-1" />
+                        Print
+                      </Button>
+                    </TableCell>
                   </TableRow>
                 ))
               )}
@@ -435,6 +474,18 @@ const Prescriptions = () => {
           </Table>
         </div>
       </Card>
+
+      {/* Hidden print component */}
+      <div className="hidden">
+        <PrescriptionReceipt
+          ref={printRef}
+          prescription={selectedPrescription || {}}
+          shopName={storeSettings?.store_name}
+          shopAddress={storeSettings?.address}
+          shopPhone={storeSettings?.phone}
+          shopEmail={storeSettings?.email}
+        />
+      </div>
     </div>
   );
 };
