@@ -33,6 +33,11 @@ const formatValue = (value: number | null, suffix = "") => {
 
 const PrescriptionReceipt = forwardRef<HTMLDivElement, PrescriptionReceiptProps>(
   ({ prescription, shopName = "Naeem Optics", shopAddress = "123 Main Street", shopPhone = "+92 300 1234567", shopEmail = "info@naeemoptics.com" }, ref) => {
+    // Guard against invalid prescription data
+    if (!prescription?.prescription_date) {
+      return <div ref={ref} />;
+    }
+
     return (
       <div ref={ref} className="bg-white text-black p-6 w-[100mm] mx-auto font-mono text-xs print:w-full print:max-w-[100mm]">
         {/* Header */}
