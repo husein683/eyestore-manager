@@ -5,14 +5,39 @@ interface Prescription {
   id: string;
   prescription_date: string;
   customer: { name: string; phone?: string } | null;
+  // D.V. Right Eye
   right_eye_sphere: number | null;
   right_eye_cylinder: number | null;
   right_eye_axis: number | null;
-  right_eye_add: number | null;
+  right_eye_va: string | null;
+  // D.V. Left Eye
   left_eye_sphere: number | null;
   left_eye_cylinder: number | null;
   left_eye_axis: number | null;
+  left_eye_va: string | null;
+  // N.V. Right Eye
+  right_eye_nv_sphere: number | null;
+  right_eye_nv_cylinder: number | null;
+  right_eye_nv_axis: number | null;
+  right_eye_nv_va: string | null;
+  // N.V. Left Eye
+  left_eye_nv_sphere: number | null;
+  left_eye_nv_cylinder: number | null;
+  left_eye_nv_axis: number | null;
+  left_eye_nv_va: string | null;
+  // Legacy fields (for backward compatibility)
+  right_eye_add: number | null;
   left_eye_add: number | null;
+  // Lens Options
+  emr_coating: boolean;
+  blue_cut: boolean;
+  plastic: boolean;
+  tint: boolean;
+  anti_glare: boolean;
+  polycarbonate: boolean;
+  bifocal: boolean;
+  progressive: boolean;
+  // Other
   pd_distance: number | null;
   notes: string | null;
 }
@@ -26,21 +51,21 @@ interface PrescriptionReceiptProps {
   serialNumber?: string;
 }
 
-const formatValue = (value: number | null) => {
+const formatValue = (value: number | null | undefined) => {
   if (value === null || value === undefined) return "";
   const sign = value > 0 ? "+" : "";
   return `${sign}${value.toFixed(2)}`;
 };
 
-const formatAxis = (value: number | null) => {
+const formatAxis = (value: number | null | undefined) => {
   if (value === null || value === undefined) return "";
   return `${value}°`;
 };
 
-const Checkbox = ({ label, checked = false }: { label: string; checked?: boolean }) => (
+const PrintCheckbox = ({ label, checked = false }: { label: string; checked?: boolean }) => (
   <div className="flex items-center gap-1.5 text-[10px]">
     <div className="w-3 h-3 border border-black flex items-center justify-center">
-      {checked && <span className="text-[8px]">✓</span>}
+      {checked && <span className="text-[8px] font-bold">✓</span>}
     </div>
     <span>{label}</span>
   </div>
@@ -55,6 +80,10 @@ const PrescriptionReceipt = forwardRef<HTMLDivElement, PrescriptionReceiptProps>
 
     const prescriptionDate = format(new Date(prescription.prescription_date), "dd/MM/yyyy");
     const sNo = serialNumber || prescription.id?.slice(0, 6).toUpperCase() || "";
+
+    // For N.V. section, use dedicated NV fields or fall back to legacy "add" fields
+    const rightNvSphere = prescription.right_eye_nv_sphere ?? prescription.right_eye_add;
+    const leftNvSphere = prescription.left_eye_nv_sphere ?? prescription.left_eye_add;
 
     return (
       <div ref={ref} className="bg-white text-black p-6 w-[210mm] mx-auto font-sans text-xs print:w-full print:max-w-[210mm]">
@@ -111,26 +140,26 @@ const PrescriptionReceipt = forwardRef<HTMLDivElement, PrescriptionReceiptProps>
                   <td className="border border-black py-3 px-2">{formatValue(prescription.right_eye_sphere)}</td>
                   <td className="border border-black py-3 px-2">{formatValue(prescription.right_eye_cylinder)}</td>
                   <td className="border border-black py-3 px-2">{formatAxis(prescription.right_eye_axis)}</td>
-                  <td className="border border-black py-3 px-2"></td>
+                  <td className="border border-black py-3 px-2">{prescription.right_eye_va || ""}</td>
                 </tr>
                 <tr>
                   <td className="border border-black py-3 px-2 font-bold">OS</td>
                   <td className="border border-black py-3 px-2">{formatValue(prescription.left_eye_sphere)}</td>
                   <td className="border border-black py-3 px-2">{formatValue(prescription.left_eye_cylinder)}</td>
                   <td className="border border-black py-3 px-2">{formatAxis(prescription.left_eye_axis)}</td>
-                  <td className="border border-black py-3 px-2"></td>
+                  <td className="border border-black py-3 px-2">{prescription.left_eye_va || ""}</td>
                 </tr>
               </tbody>
             </table>
 
             {/* Lens Options Checkboxes */}
             <div className="flex flex-col justify-center gap-1 min-w-[100px]">
-              <Checkbox label="EMR Coating" />
-              <Checkbox label="Blue Cut" />
-              <Checkbox label="Plastic" />
-              <Checkbox label="Tint" />
-              <Checkbox label="Anti-Glare" />
-              <Checkbox label="Polycarbonate" />
+              <PrintCheckbox label="EMR Coating" checked={prescription.emr_coating} />
+              <PrintCheckbox label="Blue Cut" checked={prescription.blue_cut} />
+              <PrintCheckbox label="Plastic" checked={prescription.plastic} />
+              <PrintCheckbox label="Tint" checked={prescription.tint} />
+              <PrintCheckbox label="Anti-Glare" checked={prescription.anti_glare} />
+              <PrintCheckbox label="Polycarbonate" checked={prescription.polycarbonate} />
             </div>
           </div>
         </div>
@@ -153,25 +182,25 @@ const PrescriptionReceipt = forwardRef<HTMLDivElement, PrescriptionReceiptProps>
               <tbody>
                 <tr>
                   <td className="border border-black py-3 px-2 font-bold">OD</td>
-                  <td className="border border-black py-3 px-2">{formatValue(prescription.right_eye_add)}</td>
-                  <td className="border border-black py-3 px-2"></td>
-                  <td className="border border-black py-3 px-2"></td>
-                  <td className="border border-black py-3 px-2"></td>
+                  <td className="border border-black py-3 px-2">{formatValue(rightNvSphere)}</td>
+                  <td className="border border-black py-3 px-2">{formatValue(prescription.right_eye_nv_cylinder)}</td>
+                  <td className="border border-black py-3 px-2">{formatAxis(prescription.right_eye_nv_axis)}</td>
+                  <td className="border border-black py-3 px-2">{prescription.right_eye_nv_va || ""}</td>
                 </tr>
                 <tr>
                   <td className="border border-black py-3 px-2 font-bold">OS</td>
-                  <td className="border border-black py-3 px-2">{formatValue(prescription.left_eye_add)}</td>
-                  <td className="border border-black py-3 px-2"></td>
-                  <td className="border border-black py-3 px-2"></td>
-                  <td className="border border-black py-3 px-2"></td>
+                  <td className="border border-black py-3 px-2">{formatValue(leftNvSphere)}</td>
+                  <td className="border border-black py-3 px-2">{formatValue(prescription.left_eye_nv_cylinder)}</td>
+                  <td className="border border-black py-3 px-2">{formatAxis(prescription.left_eye_nv_axis)}</td>
+                  <td className="border border-black py-3 px-2">{prescription.left_eye_nv_va || ""}</td>
                 </tr>
               </tbody>
             </table>
 
             {/* NV Options */}
             <div className="flex flex-col justify-center gap-2 min-w-[100px]">
-              <Checkbox label="Bifocal" />
-              <Checkbox label="Progressive" />
+              <PrintCheckbox label="Bifocal" checked={prescription.bifocal} />
+              <PrintCheckbox label="Progressive" checked={prescription.progressive} />
               <div className="flex items-center gap-1 text-[10px] mt-2">
                 <span className="font-semibold">IPD.</span>
                 <span className="border-b border-black inline-block min-w-[40px]">
