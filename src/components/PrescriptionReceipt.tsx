@@ -23,114 +23,191 @@ interface PrescriptionReceiptProps {
   shopAddress?: string;
   shopPhone?: string;
   shopEmail?: string;
+  serialNumber?: string;
 }
 
-const formatValue = (value: number | null, suffix = "") => {
-  if (value === null || value === undefined) return "-";
+const formatValue = (value: number | null) => {
+  if (value === null || value === undefined) return "";
   const sign = value > 0 ? "+" : "";
-  return `${sign}${value.toFixed(2)}${suffix}`;
+  return `${sign}${value.toFixed(2)}`;
 };
 
+const formatAxis = (value: number | null) => {
+  if (value === null || value === undefined) return "";
+  return `${value}°`;
+};
+
+const Checkbox = ({ label, checked = false }: { label: string; checked?: boolean }) => (
+  <div className="flex items-center gap-1.5 text-[10px]">
+    <div className="w-3 h-3 border border-black flex items-center justify-center">
+      {checked && <span className="text-[8px]">✓</span>}
+    </div>
+    <span>{label}</span>
+  </div>
+);
+
 const PrescriptionReceipt = forwardRef<HTMLDivElement, PrescriptionReceiptProps>(
-  ({ prescription, shopName = "Naeem Optics", shopAddress = "123 Main Street", shopPhone = "+92 300 1234567", shopEmail = "info@naeemoptics.com" }, ref) => {
+  ({ prescription, shopName = "Naeem Optics", shopAddress = "123 Main Street", shopPhone = "+92 300 1234567", shopEmail = "info@naeemoptics.com", serialNumber }, ref) => {
     // Guard against invalid prescription data
     if (!prescription?.prescription_date) {
       return <div ref={ref} />;
     }
 
+    const prescriptionDate = format(new Date(prescription.prescription_date), "dd/MM/yyyy");
+    const sNo = serialNumber || prescription.id?.slice(0, 6).toUpperCase() || "";
+
     return (
-      <div ref={ref} className="bg-white text-black p-6 w-[100mm] mx-auto font-mono text-xs print:w-full print:max-w-[100mm]">
+      <div ref={ref} className="bg-white text-black p-6 w-[210mm] mx-auto font-sans text-xs print:w-full print:max-w-[210mm]">
         {/* Header */}
-        <div className="text-center border-b-2 border-black pb-4 mb-4">
-          <h1 className="text-lg font-bold uppercase tracking-wide">{shopName}</h1>
+        <div className="text-center border-b-2 border-black pb-3 mb-4">
+          <h1 className="text-xl font-bold uppercase tracking-wide">{shopName}</h1>
           <p className="text-[10px] mt-1">{shopAddress}</p>
-          <p className="text-[10px]">Tel: {shopPhone}</p>
-          <p className="text-[10px]">{shopEmail}</p>
+          <p className="text-[10px]">Tel: {shopPhone} | Email: {shopEmail}</p>
         </div>
 
-        {/* Title */}
-        <div className="text-center mb-4">
-          <h2 className="text-base font-bold uppercase border border-black py-1">
-            Eye Prescription
-          </h2>
-        </div>
-
-        {/* Patient Info */}
-        <div className="border-b border-dashed border-gray-400 pb-3 mb-4">
-          <div className="flex justify-between mb-1">
-            <span className="font-semibold">Patient Name:</span>
-            <span>{prescription.customer?.name || "N/A"}</span>
-          </div>
-          <div className="flex justify-between mb-1">
-            <span className="font-semibold">Phone:</span>
-            <span>{prescription.customer?.phone || "N/A"}</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="font-semibold">Date:</span>
-            <span>{format(new Date(prescription.prescription_date), "dd/MM/yyyy")}</span>
+        {/* Patient Info Row */}
+        <div className="flex justify-between mb-4 text-[11px]">
+          <div className="flex-1">
+            <span className="font-semibold">Patient Name: </span>
+            <span className="border-b border-black inline-block min-w-[150px]">
+              {prescription.customer?.name || ""}
+            </span>
           </div>
         </div>
 
-        {/* Prescription Table */}
+        <div className="flex justify-between mb-4 text-[11px] gap-4">
+          <div className="flex items-center">
+            <span className="font-semibold">Age: </span>
+            <span className="border-b border-black inline-block min-w-[60px] ml-1">______</span>
+          </div>
+          <div className="flex items-center">
+            <span className="font-semibold">Date: </span>
+            <span className="border-b border-black inline-block min-w-[80px] ml-1">{prescriptionDate}</span>
+          </div>
+          <div className="flex items-center">
+            <span className="font-semibold">S.No. </span>
+            <span className="border-b border-black inline-block min-w-[60px] ml-1">{sNo}</span>
+          </div>
+        </div>
+
+        {/* D.V. Section - Distance Vision */}
         <div className="mb-4">
-          <table className="w-full border-collapse border border-black text-center">
-            <thead>
-              <tr className="bg-gray-100">
-                <th className="border border-black py-2 px-1"></th>
-                <th className="border border-black py-2 px-1">SPH</th>
-                <th className="border border-black py-2 px-1">CYL</th>
-                <th className="border border-black py-2 px-1">AXIS</th>
-                <th className="border border-black py-2 px-1">ADD</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td className="border border-black py-2 px-1 font-bold bg-gray-50">OD (R)</td>
-                <td className="border border-black py-2 px-1">{formatValue(prescription.right_eye_sphere)}</td>
-                <td className="border border-black py-2 px-1">{formatValue(prescription.right_eye_cylinder)}</td>
-                <td className="border border-black py-2 px-1">{prescription.right_eye_axis !== null ? `${prescription.right_eye_axis}°` : "-"}</td>
-                <td className="border border-black py-2 px-1">{formatValue(prescription.right_eye_add)}</td>
-              </tr>
-              <tr>
-                <td className="border border-black py-2 px-1 font-bold bg-gray-50">OS (L)</td>
-                <td className="border border-black py-2 px-1">{formatValue(prescription.left_eye_sphere)}</td>
-                <td className="border border-black py-2 px-1">{formatValue(prescription.left_eye_cylinder)}</td>
-                <td className="border border-black py-2 px-1">{prescription.left_eye_axis !== null ? `${prescription.left_eye_axis}°` : "-"}</td>
-                <td className="border border-black py-2 px-1">{formatValue(prescription.left_eye_add)}</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+          <h3 className="text-center font-bold text-sm mb-2 underline">D.V.</h3>
+          <div className="flex gap-4">
+            {/* D.V. Table */}
+            <table className="flex-1 border-collapse border border-black text-center text-[10px]">
+              <thead>
+                <tr>
+                  <th className="border border-black py-1.5 px-2 w-12"></th>
+                  <th className="border border-black py-1.5 px-2">Spherical</th>
+                  <th className="border border-black py-1.5 px-2">Cylindrical</th>
+                  <th className="border border-black py-1.5 px-2">Axis</th>
+                  <th className="border border-black py-1.5 px-2">VA</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td className="border border-black py-3 px-2 font-bold">OD</td>
+                  <td className="border border-black py-3 px-2">{formatValue(prescription.right_eye_sphere)}</td>
+                  <td className="border border-black py-3 px-2">{formatValue(prescription.right_eye_cylinder)}</td>
+                  <td className="border border-black py-3 px-2">{formatAxis(prescription.right_eye_axis)}</td>
+                  <td className="border border-black py-3 px-2"></td>
+                </tr>
+                <tr>
+                  <td className="border border-black py-3 px-2 font-bold">OS</td>
+                  <td className="border border-black py-3 px-2">{formatValue(prescription.left_eye_sphere)}</td>
+                  <td className="border border-black py-3 px-2">{formatValue(prescription.left_eye_cylinder)}</td>
+                  <td className="border border-black py-3 px-2">{formatAxis(prescription.left_eye_axis)}</td>
+                  <td className="border border-black py-3 px-2"></td>
+                </tr>
+              </tbody>
+            </table>
 
-        {/* PD */}
-        <div className="border border-black p-2 mb-4 text-center">
-          <span className="font-bold">Pupillary Distance (PD): </span>
-          <span>{prescription.pd_distance !== null ? `${prescription.pd_distance} mm` : "N/A"}</span>
-        </div>
-
-        {/* Notes */}
-        {prescription.notes && (
-          <div className="border-b border-dashed border-gray-400 pb-3 mb-4">
-            <p className="font-semibold mb-1">Notes:</p>
-            <p className="text-[10px]">{prescription.notes}</p>
+            {/* Lens Options Checkboxes */}
+            <div className="flex flex-col justify-center gap-1 min-w-[100px]">
+              <Checkbox label="EMR Coating" />
+              <Checkbox label="Blue Cut" />
+              <Checkbox label="Plastic" />
+              <Checkbox label="Tint" />
+              <Checkbox label="Anti-Glare" />
+              <Checkbox label="Polycarbonate" />
+            </div>
           </div>
-        )}
-
-        {/* Legend */}
-        <div className="text-[9px] text-gray-600 mb-4">
-          <p><strong>OD:</strong> Right Eye | <strong>OS:</strong> Left Eye</p>
-          <p><strong>SPH:</strong> Sphere | <strong>CYL:</strong> Cylinder | <strong>ADD:</strong> Addition</p>
         </div>
 
-        {/* Footer */}
-        <div className="text-center text-[10px] border-t border-gray-400 pt-3">
-          <p className="font-semibold">Thank you for choosing {shopName}!</p>
-          <p className="mt-1">This prescription is valid for one year from date of issue.</p>
-          <div className="mt-3 pt-2 border-t border-gray-300">
-            <p className="text-[9px] text-gray-500">
-              Printed: {format(new Date(), "dd/MM/yyyy HH:mm:ss")}
-            </p>
+        {/* N.V. Section - Near Vision */}
+        <div className="mb-4">
+          <h3 className="text-center font-bold text-sm mb-2 underline">N.V.</h3>
+          <div className="flex gap-4">
+            {/* N.V. Table */}
+            <table className="flex-1 border-collapse border border-black text-center text-[10px]">
+              <thead>
+                <tr>
+                  <th className="border border-black py-1.5 px-2 w-12"></th>
+                  <th className="border border-black py-1.5 px-2">Spherical</th>
+                  <th className="border border-black py-1.5 px-2">Cylindrical</th>
+                  <th className="border border-black py-1.5 px-2">Axis</th>
+                  <th className="border border-black py-1.5 px-2">VA</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td className="border border-black py-3 px-2 font-bold">OD</td>
+                  <td className="border border-black py-3 px-2">{formatValue(prescription.right_eye_add)}</td>
+                  <td className="border border-black py-3 px-2"></td>
+                  <td className="border border-black py-3 px-2"></td>
+                  <td className="border border-black py-3 px-2"></td>
+                </tr>
+                <tr>
+                  <td className="border border-black py-3 px-2 font-bold">OS</td>
+                  <td className="border border-black py-3 px-2">{formatValue(prescription.left_eye_add)}</td>
+                  <td className="border border-black py-3 px-2"></td>
+                  <td className="border border-black py-3 px-2"></td>
+                  <td className="border border-black py-3 px-2"></td>
+                </tr>
+              </tbody>
+            </table>
+
+            {/* NV Options */}
+            <div className="flex flex-col justify-center gap-2 min-w-[100px]">
+              <Checkbox label="Bifocal" />
+              <Checkbox label="Progressive" />
+              <div className="flex items-center gap-1 text-[10px] mt-2">
+                <span className="font-semibold">IPD.</span>
+                <span className="border-b border-black inline-block min-w-[40px]">
+                  {prescription.pd_distance || ""}
+                </span>
+              </div>
+            </div>
           </div>
+        </div>
+
+        {/* Remarks */}
+        <div className="mb-6">
+          <div className="flex items-start text-[11px]">
+            <span className="font-semibold">Remarks:</span>
+            <span className="border-b border-black inline-block flex-1 ml-2 min-h-[20px]">
+              {prescription.notes || ""}
+            </span>
+          </div>
+        </div>
+
+        {/* Sign/Stamp */}
+        <div className="flex justify-end mb-6">
+          <div className="text-right text-[11px]">
+            <div className="border-b border-black min-w-[150px] h-[40px]"></div>
+            <span className="font-semibold">Sign/Stamp:</span>
+          </div>
+        </div>
+
+        {/* Footer Quote */}
+        <div className="text-center border-t border-black pt-3">
+          <p className="italic text-[11px]">"Get your eyes checked every 6 Months - keep them healthy"</p>
+        </div>
+
+        {/* Legend - small print */}
+        <div className="text-[8px] text-gray-500 mt-3 text-center">
+          <p><strong>OD:</strong> Right Eye (Oculus Dexter) | <strong>OS:</strong> Left Eye (Oculus Sinister) | <strong>D.V.:</strong> Distance Vision | <strong>N.V.:</strong> Near Vision | <strong>IPD:</strong> Interpupillary Distance</p>
         </div>
       </div>
     );
