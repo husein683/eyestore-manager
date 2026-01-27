@@ -203,54 +203,108 @@ export type Database = {
       }
       prescriptions: {
         Row: {
+          anti_glare: boolean | null
+          bifocal: boolean | null
+          blue_cut: boolean | null
           created_at: string
           customer_id: string
+          emr_coating: boolean | null
           id: string
           left_eye_add: number | null
           left_eye_axis: number | null
           left_eye_cylinder: number | null
+          left_eye_nv_axis: number | null
+          left_eye_nv_cylinder: number | null
+          left_eye_nv_sphere: number | null
+          left_eye_nv_va: string | null
           left_eye_sphere: number | null
+          left_eye_va: string | null
           notes: string | null
           pd_distance: number | null
+          plastic: boolean | null
+          polycarbonate: boolean | null
           prescription_date: string
+          progressive: boolean | null
           right_eye_add: number | null
           right_eye_axis: number | null
           right_eye_cylinder: number | null
+          right_eye_nv_axis: number | null
+          right_eye_nv_cylinder: number | null
+          right_eye_nv_sphere: number | null
+          right_eye_nv_va: string | null
           right_eye_sphere: number | null
+          right_eye_va: string | null
+          tint: boolean | null
           updated_at: string
         }
         Insert: {
+          anti_glare?: boolean | null
+          bifocal?: boolean | null
+          blue_cut?: boolean | null
           created_at?: string
           customer_id: string
+          emr_coating?: boolean | null
           id?: string
           left_eye_add?: number | null
           left_eye_axis?: number | null
           left_eye_cylinder?: number | null
+          left_eye_nv_axis?: number | null
+          left_eye_nv_cylinder?: number | null
+          left_eye_nv_sphere?: number | null
+          left_eye_nv_va?: string | null
           left_eye_sphere?: number | null
+          left_eye_va?: string | null
           notes?: string | null
           pd_distance?: number | null
+          plastic?: boolean | null
+          polycarbonate?: boolean | null
           prescription_date: string
+          progressive?: boolean | null
           right_eye_add?: number | null
           right_eye_axis?: number | null
           right_eye_cylinder?: number | null
+          right_eye_nv_axis?: number | null
+          right_eye_nv_cylinder?: number | null
+          right_eye_nv_sphere?: number | null
+          right_eye_nv_va?: string | null
           right_eye_sphere?: number | null
+          right_eye_va?: string | null
+          tint?: boolean | null
           updated_at?: string
         }
         Update: {
+          anti_glare?: boolean | null
+          bifocal?: boolean | null
+          blue_cut?: boolean | null
           created_at?: string
           customer_id?: string
+          emr_coating?: boolean | null
           id?: string
           left_eye_add?: number | null
           left_eye_axis?: number | null
           left_eye_cylinder?: number | null
+          left_eye_nv_axis?: number | null
+          left_eye_nv_cylinder?: number | null
+          left_eye_nv_sphere?: number | null
+          left_eye_nv_va?: string | null
           left_eye_sphere?: number | null
+          left_eye_va?: string | null
           notes?: string | null
           pd_distance?: number | null
+          plastic?: boolean | null
+          polycarbonate?: boolean | null
           prescription_date?: string
+          progressive?: boolean | null
           right_eye_add?: number | null
           right_eye_axis?: number | null
           right_eye_cylinder?: number | null
+          right_eye_nv_axis?: number | null
+          right_eye_nv_cylinder?: number | null
+          right_eye_nv_sphere?: number | null
+          right_eye_nv_va?: string | null
           right_eye_sphere?: number | null
+          right_eye_va?: string | null
+          tint?: boolean | null
           updated_at?: string
         }
         Relationships: [
