@@ -9,7 +9,18 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Plus, Eye, Search, Printer } from "lucide-react";
+import { Plus, Eye, Search, Printer, Trash2 } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 import { useReactToPrint } from "react-to-print";
 import PrescriptionReceipt from "@/components/PrescriptionReceipt";
@@ -245,6 +256,16 @@ const Prescriptions = () => {
       pd_distance: "",
       notes: "",
     });
+  };
+
+  const handleDelete = async (id: string) => {
+    const { error } = await supabase.from("prescriptions").delete().eq("id", id);
+    if (error) {
+      toast.error("Failed to delete: " + error.message);
+    } else {
+      toast.success("Prescription deleted!");
+      fetchPrescriptions();
+    }
   };
 
   return (
@@ -727,14 +748,37 @@ const Prescriptions = () => {
                       </div>
                     </TableCell>
                     <TableCell className="text-right">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => handlePrintPrescription(prescription)}
-                      >
-                        <Printer className="w-4 h-4 mr-1" />
-                        Print
-                      </Button>
+                      <div className="flex gap-1 justify-end">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handlePrintPrescription(prescription)}
+                        >
+                          <Printer className="w-4 h-4 mr-1" />
+                          Print
+                        </Button>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button size="sm" variant="ghost" className="text-destructive hover:text-destructive">
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Delete Prescription?</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                This will permanently delete this prescription for {prescription.customer?.name}. This action cannot be undone.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogAction onClick={() => handleDelete(prescription.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                                Delete
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))
