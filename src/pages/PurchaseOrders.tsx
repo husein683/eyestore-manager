@@ -7,7 +7,18 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Package, Check, X } from "lucide-react";
+import { Plus, Package, Check, X, Trash2 } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
@@ -201,6 +212,39 @@ const PurchaseOrders = () => {
     }
   };
 
+  const handleDeleteOrder = async (orderId: string, orderStatus: string, items: any[]) => {
+    // If order was received, we need to subtract from stock
+    if (orderStatus === "received") {
+      for (const item of items) {
+        const { data: product } = await supabase
+          .from("products")
+          .select("stock_quantity")
+          .eq("id", item.product_id)
+          .single();
+
+        if (product) {
+          await supabase
+            .from("products")
+            .update({ stock_quantity: Math.max(0, product.stock_quantity - item.quantity) })
+            .eq("id", item.product_id);
+        }
+      }
+    }
+
+    // Delete order items first
+    await supabase.from("purchase_order_items").delete().eq("purchase_order_id", orderId);
+    
+    // Delete order
+    const { error } = await supabase.from("purchase_orders").delete().eq("id", orderId);
+    
+    if (error) {
+      toast.error("Failed to delete order: " + error.message);
+    } else {
+      toast.success("Order deleted!" + (orderStatus === "received" ? " Stock adjusted." : ""));
+      fetchOrders();
+    }
+  };
+
   const getStatusBadge = (status: string) => {
     const variants: any = {
       pending: "outline",
@@ -361,16 +405,41 @@ const PurchaseOrders = () => {
               </div>
               <div className="text-right">
                 <p className="text-2xl font-bold text-primary">Rs.{Number(order.total_amount).toFixed(0)}</p>
-                {order.status === "pending" && (
-                  <div className="flex gap-2 mt-2">
-                    <Button size="sm" onClick={() => markAsReceived(order.id, order.items)}>
-                      <Check className="w-4 h-4 mr-1" /> Receive
-                    </Button>
-                    <Button size="sm" variant="destructive" onClick={() => cancelOrder(order.id)}>
-                      <X className="w-4 h-4 mr-1" /> Cancel
-                    </Button>
-                  </div>
-                )}
+                <div className="flex gap-2 mt-2 justify-end">
+                  {order.status === "pending" && (
+                    <>
+                      <Button size="sm" onClick={() => markAsReceived(order.id, order.items)}>
+                        <Check className="w-4 h-4 mr-1" /> Receive
+                      </Button>
+                      <Button size="sm" variant="outline" onClick={() => cancelOrder(order.id)}>
+                        <X className="w-4 h-4 mr-1" /> Cancel
+                      </Button>
+                    </>
+                  )}
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button size="sm" variant="ghost" className="text-destructive hover:text-destructive">
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Delete Purchase Order?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          This will permanently delete {order.order_number}.
+                          {order.status === "received" && " The stock quantities will be adjusted accordingly."}
+                          This action cannot be undone.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={() => handleDeleteOrder(order.id, order.status, order.items || [])} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                          Delete
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </div>
               </div>
             </div>
             

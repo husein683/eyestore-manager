@@ -8,7 +8,18 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, ShoppingCart, X, Printer } from "lucide-react";
+import { Plus, ShoppingCart, X, Printer, Trash2 } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 import SaleReceipt from "@/components/SaleReceipt";
 
@@ -196,6 +207,33 @@ const Sales = () => {
   const handlePrintReceipt = (sale: any) => {
     setSelectedSale(sale);
     setReceiptOpen(true);
+  };
+
+  const handleDeleteSale = async (saleId: string, saleItems: any[]) => {
+    // First restore stock quantities
+    for (const item of saleItems) {
+      const product = products.find(p => p.id === item.product_id);
+      if (product) {
+        await supabase
+          .from("products")
+          .update({ stock_quantity: product.stock_quantity + item.quantity })
+          .eq("id", item.product_id);
+      }
+    }
+
+    // Delete sale items
+    await supabase.from("sale_items").delete().eq("sale_id", saleId);
+    
+    // Delete sale
+    const { error } = await supabase.from("sales").delete().eq("id", saleId);
+    
+    if (error) {
+      toast.error("Failed to delete sale: " + error.message);
+    } else {
+      toast.success("Sale deleted and stock restored!");
+      fetchSales();
+      fetchProducts();
+    }
   };
 
   const printReceipt = () => {
@@ -444,14 +482,37 @@ const Sales = () => {
               </div>
               <div className="flex flex-col items-end gap-2">
                 <p className="text-2xl font-bold text-success">Rs.{Number(sale.total_amount).toFixed(0)}</p>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => handlePrintReceipt(sale)}
-                >
-                  <Printer className="w-4 h-4 mr-1" />
-                  Print Receipt
-                </Button>
+                <div className="flex gap-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => handlePrintReceipt(sale)}
+                  >
+                    <Printer className="w-4 h-4 mr-1" />
+                    Print Receipt
+                  </Button>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button size="sm" variant="ghost" className="text-destructive hover:text-destructive">
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Delete Sale?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          This will permanently delete {sale.sale_number} and restore the stock quantities. This action cannot be undone.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={() => handleDeleteSale(sale.id, sale.items || [])} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                          Delete
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </div>
               </div>
             </div>
             

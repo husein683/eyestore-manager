@@ -11,7 +11,18 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
-import { Users, DollarSign, Calendar } from "lucide-react";
+import { Users, DollarSign, Calendar, Trash2 } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 interface Employee {
   id: string;
@@ -204,6 +215,30 @@ const Employees = () => {
     return getMonthlyReport().reduce((sum, payment) => sum + payment.amount, 0);
   };
 
+  const handleDeleteEmployee = async (id: string) => {
+    // First delete related payments
+    await supabase.from("employee_payments").delete().eq("employee_id", id);
+    
+    const { error } = await supabase.from("employees").delete().eq("id", id);
+    if (error) {
+      toast.error("Failed to delete: " + error.message);
+    } else {
+      toast.success("Employee deleted!");
+      fetchEmployees();
+      fetchPayments();
+    }
+  };
+
+  const handleDeletePayment = async (id: string) => {
+    const { error } = await supabase.from("employee_payments").delete().eq("id", id);
+    if (error) {
+      toast.error("Failed to delete: " + error.message);
+    } else {
+      toast.success("Payment deleted!");
+      fetchPayments();
+    }
+  };
+
   if (!isAdmin) {
     return null;
   }
@@ -366,6 +401,7 @@ const Employees = () => {
                     <TableHead>Phone</TableHead>
                     <TableHead>Email</TableHead>
                     <TableHead>Hire Date</TableHead>
+                    <TableHead className="w-20">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -378,6 +414,29 @@ const Employees = () => {
                       <TableCell>{employee.phone || "N/A"}</TableCell>
                       <TableCell>{employee.email || "N/A"}</TableCell>
                       <TableCell>{new Date(employee.hire_date).toLocaleDateString()}</TableCell>
+                      <TableCell>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button size="icon" variant="ghost" className="text-destructive hover:text-destructive">
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Delete Employee?</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                This will permanently delete {employee.full_name} and all their payment records. This action cannot be undone.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogAction onClick={() => handleDeleteEmployee(employee.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                                Delete
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -509,6 +568,7 @@ const Employees = () => {
                     <TableHead>Type</TableHead>
                     <TableHead>Method</TableHead>
                     <TableHead>Notes</TableHead>
+                    <TableHead className="w-20">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -520,6 +580,29 @@ const Employees = () => {
                       <TableCell className="capitalize">{payment.payment_type}</TableCell>
                       <TableCell className="capitalize">{payment.payment_method || "N/A"}</TableCell>
                       <TableCell>{payment.notes || "N/A"}</TableCell>
+                      <TableCell>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button size="icon" variant="ghost" className="text-destructive hover:text-destructive">
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Delete Payment?</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                This will permanently delete this payment record. This action cannot be undone.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogAction onClick={() => handleDeletePayment(payment.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                                Delete
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
