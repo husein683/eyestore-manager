@@ -28,6 +28,8 @@ interface Prescription {
   // Legacy fields (for backward compatibility)
   right_eye_add: number | null;
   left_eye_add: number | null;
+  // New Addition field
+  addition: number | null;
   // Lens Options
   emr_coating: boolean;
   blue_cut: boolean;
@@ -117,6 +119,12 @@ const PrescriptionReceipt = forwardRef<HTMLDivElement, PrescriptionReceiptProps>
             <span className="font-semibold">S.No. </span>
             <span className="border-b border-black inline-block min-w-[60px] ml-1">{sNo}</span>
           </div>
+          {prescription.addition && (
+            <div className="flex items-center">
+              <span className="font-semibold">ADD: </span>
+              <span className="border-b border-black inline-block min-w-[50px] ml-1 font-bold">{formatValue(prescription.addition)}</span>
+            </div>
+          )}
         </div>
 
         {/* D.V. Section - Distance Vision */}

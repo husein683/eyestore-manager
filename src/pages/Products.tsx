@@ -187,8 +187,9 @@ const Products = () => {
                       <SelectItem value="sunglasses">Sunglasses</SelectItem>
                       <SelectItem value="contact_lenses">Contact Lenses</SelectItem>
                       <SelectItem value="accessories">Accessories</SelectItem>
-                      <SelectItem value="cleaning_solutions">Cleaning Solutions</SelectItem>
+                      <SelectItem value="contact_lens_solution">Contact Lens Solution</SelectItem>
                       <SelectItem value="custom_eyesight">Custom Eyesight</SelectItem>
+                      <SelectItem value="hearing_aid">Hearing Aid</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -257,8 +258,9 @@ const Products = () => {
               <SelectItem value="sunglasses">Sunglasses</SelectItem>
               <SelectItem value="contact_lenses">Contact Lenses</SelectItem>
               <SelectItem value="accessories">Accessories</SelectItem>
-              <SelectItem value="cleaning_solutions">Cleaning Solutions</SelectItem>
+              <SelectItem value="contact_lens_solution">Contact Lens Solution</SelectItem>
               <SelectItem value="custom_eyesight">Custom Eyesight</SelectItem>
+              <SelectItem value="hearing_aid">Hearing Aid</SelectItem>
             </SelectContent>
           </Select>
         </div>

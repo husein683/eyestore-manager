@@ -203,6 +203,7 @@ export type Database = {
       }
       prescriptions: {
         Row: {
+          addition: number | null
           anti_glare: boolean | null
           bifocal: boolean | null
           blue_cut: boolean | null
@@ -238,6 +239,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          addition?: number | null
           anti_glare?: boolean | null
           bifocal?: boolean | null
           blue_cut?: boolean | null
@@ -273,6 +275,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          addition?: number | null
           anti_glare?: boolean | null
           bifocal?: boolean | null
           blue_cut?: boolean | null
