@@ -40,8 +40,7 @@ const Prescriptions = () => {
     customer_phone: "",
     customer_email: "",
     prescription_date: new Date().toISOString().split("T")[0],
-    // Addition field
-    addition: "",
+    
     // D.V. (Distance Vision) - Right Eye
     right_eye_sphere: "",
     right_eye_cylinder: "",
@@ -52,6 +51,9 @@ const Prescriptions = () => {
     left_eye_cylinder: "",
     left_eye_axis: "",
     left_eye_va: "",
+
+    // Addition field
+    addition: "",
     // N.V. (Near Vision) - Right Eye
     right_eye_nv_sphere: "",
     right_eye_nv_cylinder: "",
@@ -175,8 +177,7 @@ const Prescriptions = () => {
     const prescriptionData = {
       customer_id: customerId,
       prescription_date: formData.prescription_date,
-      // Addition field
-      addition: formData.addition ? parseFloat(formData.addition) : null,
+     
       // D.V. Right Eye
       right_eye_sphere: formData.right_eye_sphere ? parseFloat(formData.right_eye_sphere) : null,
       right_eye_cylinder: formData.right_eye_cylinder ? parseFloat(formData.right_eye_cylinder) : null,
@@ -187,6 +188,8 @@ const Prescriptions = () => {
       left_eye_cylinder: formData.left_eye_cylinder ? parseFloat(formData.left_eye_cylinder) : null,
       left_eye_axis: formData.left_eye_axis ? parseInt(formData.left_eye_axis) : null,
       left_eye_va: formData.left_eye_va || null,
+     // Addition field
+      addition: formData.addition ? parseFloat(formData.addition) : null,
       // N.V. Right Eye
       right_eye_nv_sphere: formData.right_eye_nv_sphere ? parseFloat(formData.right_eye_nv_sphere) : null,
       right_eye_nv_cylinder: formData.right_eye_nv_cylinder ? parseFloat(formData.right_eye_nv_cylinder) : null,
@@ -356,21 +359,7 @@ const Prescriptions = () => {
                 )}
               </div>
 
-              {/* Addition Field - At the very top */}
-              <div className="border rounded-lg p-4 bg-primary/5">
-                <div className="space-y-2">
-                  <Label className="text-base font-semibold">Addition (ADD)</Label>
-                  <Input
-                    type="number"
-                    step="0.25"
-                    value={formData.addition}
-                    onChange={(e) => setFormData({ ...formData, addition: e.target.value })}
-                    placeholder="e.g., +2.00"
-                    className="max-w-xs"
-                  />
-                  <p className="text-xs text-muted-foreground">Reading addition power for presbyopia</p>
-                </div>
-              </div>
+              
 
               {/* Date and IPD */}
               <div className="grid grid-cols-2 gap-4">
@@ -492,6 +481,22 @@ const Prescriptions = () => {
                       />
                     </div>
                   </div>
+                </div>
+              </div>
+
+              {/* Addition Field - At the very top */}
+              <div className="border rounded-lg p-4 bg-primary/5">
+                <div className="space-y-2">
+                  <Label className="text-base font-semibold">Addition (ADD)</Label>
+                  <Input
+                    type="number"
+                    step="0.25"
+                    value={formData.addition}
+                    onChange={(e) => setFormData({ ...formData, addition: e.target.value })}
+                    placeholder="e.g., +2.00"
+                    className="max-w-xs"
+                  />
+                  <p className="text-xs text-muted-foreground">Reading addition power for presbyopia</p>
                 </div>
               </div>
 

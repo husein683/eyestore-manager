@@ -21,10 +21,10 @@ const Index = () => {
           <Eye className="w-16 h-16 text-primary" />
         </div>
         <h1 className="text-6xl font-bold text-white drop-shadow-lg">
-          EyeStore Inventory
+          Naeem Optics Inventory
         </h1>
         <p className="text-xl text-white/90 drop-shadow">
-          Your complete optical store management solution
+          A complete optical store management solution
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <Button

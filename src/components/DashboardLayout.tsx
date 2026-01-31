@@ -101,8 +101,8 @@ const DashboardLayout = () => {
                 <Eye className="w-6 h-6 text-sidebar-primary-foreground" />
               </div>
               <div>
-                <h1 className="text-xl font-bold text-sidebar-foreground">EyeStore</h1>
-                <p className="text-xs text-sidebar-foreground/60">Inventory System</p>
+                <h1 className="text-xl font-bold text-sidebar-foreground">Naeem Optics</h1>
+                <p className="text-xs text-sidebar-foreground/60">Optics & Contact Lens Inventory System</p>
               </div>
             </div>
           </div>

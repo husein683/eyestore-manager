@@ -92,7 +92,7 @@ const Dashboard = () => {
     <div className="space-y-6">
       <div>
         <h1 className="text-4xl font-bold text-foreground">Dashboard</h1>
-        <p className="text-muted-foreground mt-1">Overview of your eyestore inventory</p>
+        <p className="text-muted-foreground mt-1">Overview of Naeem Optics inventory</p>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">

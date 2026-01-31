@@ -13,10 +13,10 @@ const Settings = () => {
   const [saving, setSaving] = useState(false);
   const [settings, setSettings] = useState({
     id: "",
-    store_name: "Naeem Optics",
-    address: "123 Main Street",
-    phone: "+92 300 1234567",
-    email: "info@naeemoptics.com",
+    store_name: "Naeem Optics & Contact Lens Center",
+    address: "Circular-Road, Sheranwala Gate, Near Allied Bank",
+    phone: "+92 300 9839515",
+    email: "saadk2953@gmail.com",
   });
 
   useEffect(() => {
