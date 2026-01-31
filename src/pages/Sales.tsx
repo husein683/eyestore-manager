@@ -33,8 +33,11 @@ const Sales = () => {
   const [storeSettings, setStoreSettings] = useState<any>(null);
   const receiptRef = useRef<HTMLDivElement>(null);
   const [saleItems, setSaleItems] = useState<any[]>([{ product_type: "", product_id: "", quantity: "", discount: "0" }]);
+  const [isNewCustomer, setIsNewCustomer] = useState(false);
   const [formData, setFormData] = useState({
     customer_id: "",
+    customer_name: "",
+    customer_phone: "",
     payment_method: "cash",
     notes: "",
   });
@@ -121,6 +124,29 @@ const Sales = () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
+    let customerId = formData.customer_id;
+
+    // If creating new customer, add them first
+    if (isNewCustomer && formData.customer_name && formData.customer_phone) {
+      const { data: newCustomer, error: customerError } = await supabase
+        .from("customers")
+        .insert([{
+          name: formData.customer_name,
+          phone: formData.customer_phone,
+        }])
+        .select()
+        .single();
+
+      if (customerError) {
+        toast.error("Failed to create customer: " + customerError.message);
+        return;
+      }
+
+      customerId = newCustomer.id;
+      toast.success("Customer created successfully!");
+      fetchCustomers();
+    }
+
     // Validate stock
     for (const item of saleItems) {
       if (!item.product_id || !item.quantity) continue;
@@ -139,7 +165,7 @@ const Sales = () => {
       .from("sales")
       .insert([{
         sale_number: saleNumber,
-        customer_id: formData.customer_id || null,
+        customer_id: customerId || null,
         payment_method: formData.payment_method,
         total_amount: totalAmount,
         notes: formData.notes,
@@ -198,9 +224,12 @@ const Sales = () => {
   const resetForm = () => {
     setFormData({
       customer_id: "",
+      customer_name: "",
+      customer_phone: "",
       payment_method: "cash",
       notes: "",
     });
+    setIsNewCustomer(false);
     setSaleItems([{ product_type: "", product_id: "", quantity: "", discount: "0" }]);
   };
 
@@ -326,20 +355,57 @@ const Sales = () => {
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label>Customer (Optional)</Label>
-                  <Select
-                    value={formData.customer_id}
-                    onValueChange={(val) => setFormData({ ...formData, customer_id: val })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select customer" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {customers.map((c) => (
-                        <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <div className="flex items-center justify-between">
+                    <Label>Customer (Optional)</Label>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        setIsNewCustomer(!isNewCustomer);
+                        setFormData({ ...formData, customer_id: "", customer_name: "", customer_phone: "" });
+                      }}
+                    >
+                      {isNewCustomer ? "Select Existing" : "Add New Customer"}
+                    </Button>
+                  </div>
+                  
+                  {!isNewCustomer ? (
+                    <Select
+                      value={formData.customer_id}
+                      onValueChange={(val) => setFormData({ ...formData, customer_id: val })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select customer" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {customers.map((c) => (
+                          <SelectItem key={c.id} value={c.id}>{c.name} - {c.phone}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  ) : (
+                    <div className="grid grid-cols-2 gap-2 border rounded-lg p-3">
+                      <div className="space-y-1">
+                        <Label className="text-xs">Name *</Label>
+                        <Input
+                          value={formData.customer_name}
+                          onChange={(e) => setFormData({ ...formData, customer_name: e.target.value })}
+                          placeholder="Customer name"
+                          required={isNewCustomer}
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-xs">Phone *</Label>
+                        <Input
+                          value={formData.customer_phone}
+                          onChange={(e) => setFormData({ ...formData, customer_phone: e.target.value })}
+                          placeholder="Phone number"
+                          required={isNewCustomer}
+                        />
+                      </div>
+                    </div>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <Label>Payment Method *</Label>
@@ -393,8 +459,9 @@ const Sales = () => {
                             <SelectItem value="sunglasses">Sunglasses</SelectItem>
                             <SelectItem value="contact_lenses">Contact Lenses</SelectItem>
                             <SelectItem value="accessories">Accessories</SelectItem>
-                            <SelectItem value="cleaning_solutions">Cleaning Solutions</SelectItem>
+                            <SelectItem value="contact_lens_solution">Contact Lens Solution</SelectItem>
                             <SelectItem value="custom_eyesight">Custom Eyesight</SelectItem>
+                            <SelectItem value="hearing_aid">Hearing Aid</SelectItem>
                           </SelectContent>
                         </Select>
                         

@@ -40,6 +40,8 @@ const Prescriptions = () => {
     customer_phone: "",
     customer_email: "",
     prescription_date: new Date().toISOString().split("T")[0],
+    // Addition field
+    addition: "",
     // D.V. (Distance Vision) - Right Eye
     right_eye_sphere: "",
     right_eye_cylinder: "",
@@ -173,6 +175,8 @@ const Prescriptions = () => {
     const prescriptionData = {
       customer_id: customerId,
       prescription_date: formData.prescription_date,
+      // Addition field
+      addition: formData.addition ? parseFloat(formData.addition) : null,
       // D.V. Right Eye
       right_eye_sphere: formData.right_eye_sphere ? parseFloat(formData.right_eye_sphere) : null,
       right_eye_cylinder: formData.right_eye_cylinder ? parseFloat(formData.right_eye_cylinder) : null,
@@ -229,6 +233,7 @@ const Prescriptions = () => {
       customer_phone: "",
       customer_email: "",
       prescription_date: new Date().toISOString().split("T")[0],
+      addition: "",
       right_eye_sphere: "",
       right_eye_cylinder: "",
       right_eye_axis: "",
@@ -349,6 +354,22 @@ const Prescriptions = () => {
                     </div>
                   </div>
                 )}
+              </div>
+
+              {/* Addition Field - At the very top */}
+              <div className="border rounded-lg p-4 bg-primary/5">
+                <div className="space-y-2">
+                  <Label className="text-base font-semibold">Addition (ADD)</Label>
+                  <Input
+                    type="number"
+                    step="0.25"
+                    value={formData.addition}
+                    onChange={(e) => setFormData({ ...formData, addition: e.target.value })}
+                    placeholder="e.g., +2.00"
+                    className="max-w-xs"
+                  />
+                  <p className="text-xs text-muted-foreground">Reading addition power for presbyopia</p>
+                </div>
               </div>
 
               {/* Date and IPD */}
