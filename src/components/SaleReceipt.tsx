@@ -17,6 +17,8 @@ interface Sale {
   customer: { name: string; phone?: string; email?: string; address?: string } | null;
   payment_method: string | null;
   total_amount: number;
+  paid_amount: number;
+  balance: number;
   notes: string | null;
   items: SaleItem[];
 }
@@ -30,7 +32,7 @@ interface SaleReceiptProps {
 }
 
 const SaleReceipt = forwardRef<HTMLDivElement, SaleReceiptProps>(
-  ({ sale, shopName = "Naeem Optics", shopAddress = "123 Main Street", shopPhone = "+92 300 1234567", shopEmail = "info@naeemoptics.com" }, ref) => {
+  ({ sale, shopName = "Naeem Optics", shopAddress = "Circular-Road, Sheranwala Gate, Near Allied Bank", shopPhone = "+92 300 9839515", shopEmail = "saadk2953@gmail.com" }, ref) => {
     const subtotal = sale.items?.reduce((sum, item) => sum + (item.quantity * Number(item.unit_price)), 0) || 0;
     const totalDiscount = sale.items?.reduce((sum, item) => sum + Number(item.discount || 0), 0) || 0;
 
@@ -125,6 +127,16 @@ const SaleReceipt = forwardRef<HTMLDivElement, SaleReceiptProps>(
             <span>TOTAL:</span>
             <span>Rs.{Number(sale.total_amount).toFixed(0)}</span>
           </div>
+          <div className="flex justify-between text-green-700">
+            <span>Paid:</span>
+            <span>Rs.{Number(sale.paid_amount || 0).toFixed(0)}</span>
+          </div>
+          {Number(sale.balance || 0) > 0 && (
+            <div className="flex justify-between font-bold text-red-600">
+              <span>Balance Due:</span>
+              <span>Rs.{Number(sale.balance).toFixed(0)}</span>
+            </div>
+          )}
         </div>
 
         {/* Notes */}
