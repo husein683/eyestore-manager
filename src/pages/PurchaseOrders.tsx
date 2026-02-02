@@ -47,7 +47,7 @@ const PurchaseOrders = () => {
       .from("purchase_orders")
       .select(`
         *,
-        supplier:suppliers(name),
+        supplier:suppliers(name, phone, email, address, contact_person),
         items:purchase_order_items(
           *,
           product:products(name)
@@ -101,6 +101,10 @@ const PurchaseOrders = () => {
       const price = parseFloat(item.unit_price) || 0;
       return sum + (quantity * price);
     }, 0);
+  };
+
+  const getSelectedSupplier = () => {
+    return suppliers.find(s => s.id === formData.supplier_id);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -256,6 +260,8 @@ const PurchaseOrders = () => {
     }>{status.toUpperCase()}</Badge>;
   };
 
+  const selectedSupplier = getSelectedSupplier();
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -275,24 +281,46 @@ const PurchaseOrders = () => {
               <DialogTitle>Create Purchase Order</DialogTitle>
             </DialogHeader>
             <form onSubmit={handleSubmit} className="space-y-4">
+              {/* Supplier Selection at TOP */}
+              <div className="space-y-2">
+                <Label className="text-base font-semibold">Supplier *</Label>
+                <Select
+                  value={formData.supplier_id}
+                  onValueChange={(val) => setFormData({ ...formData, supplier_id: val })}
+                  required
+                >
+                  <SelectTrigger className="text-base">
+                    <SelectValue placeholder="Select supplier" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {suppliers.map((s) => (
+                      <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Supplier Info Display */}
+              {selectedSupplier && (
+                <Card className="p-3 bg-muted/50">
+                  <div className="grid grid-cols-2 gap-2 text-sm">
+                    <div>
+                      <span className="font-medium">Contact:</span> {selectedSupplier.contact_person || "N/A"}
+                    </div>
+                    <div>
+                      <span className="font-medium">Phone:</span> {selectedSupplier.phone || "N/A"}
+                    </div>
+                    <div>
+                      <span className="font-medium">Email:</span> {selectedSupplier.email || "N/A"}
+                    </div>
+                    <div>
+                      <span className="font-medium">Address:</span> {selectedSupplier.address || "N/A"}
+                    </div>
+                  </div>
+                </Card>
+              )}
+
               <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>Supplier *</Label>
-                  <Select
-                    value={formData.supplier_id}
-                    onValueChange={(val) => setFormData({ ...formData, supplier_id: val })}
-                    required
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select supplier" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {suppliers.map((s) => (
-                        <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
                 <div className="space-y-2">
                   <Label>Order Date *</Label>
                   <Input
@@ -393,6 +421,7 @@ const PurchaseOrders = () => {
                 </div>
                 <p className="text-sm text-muted-foreground mt-1">
                   Supplier: <span className="font-medium">{order.supplier?.name}</span>
+                  {order.supplier?.phone && <span className="ml-2">| {order.supplier.phone}</span>}
                 </p>
                 <p className="text-sm text-muted-foreground">
                   Order Date: {new Date(order.order_date).toLocaleDateString()}

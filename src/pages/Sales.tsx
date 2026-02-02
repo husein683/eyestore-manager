@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 import SaleReceipt from "@/components/SaleReceipt";
+import { Badge } from "@/components/ui/badge";
 
 const Sales = () => {
   const [sales, setSales] = useState<any[]>([]);
@@ -40,6 +41,7 @@ const Sales = () => {
     customer_phone: "",
     payment_method: "cash",
     notes: "",
+    paid_amount: "",
   });
 
   useEffect(() => {
@@ -159,6 +161,8 @@ const Sales = () => {
 
     const saleNumber = `SALE-${Date.now()}`;
     const totalAmount = calculateTotal();
+    const paidAmount = parseFloat(formData.paid_amount) || 0;
+    const balance = totalAmount - paidAmount;
 
     // Create sale
     const { data: sale, error: saleError } = await supabase
@@ -168,6 +172,8 @@ const Sales = () => {
         customer_id: customerId || null,
         payment_method: formData.payment_method,
         total_amount: totalAmount,
+        paid_amount: paidAmount,
+        balance: balance > 0 ? balance : 0,
         notes: formData.notes,
         created_by: user.id,
       }])
@@ -228,6 +234,7 @@ const Sales = () => {
       customer_phone: "",
       payment_method: "cash",
       notes: "",
+      paid_amount: "",
     });
     setIsNewCustomer(false);
     setSaleItems([{ product_type: "", product_id: "", quantity: "", discount: "0" }]);
@@ -306,6 +313,8 @@ const Sales = () => {
             .text-sm { font-size: 11px; }
             .text-xs { font-size: 10px; }
             .text-gray { color: #666; }
+            .text-green { color: #16a34a; }
+            .text-red { color: #dc2626; }
             table { width: 100%; border-collapse: collapse; }
             th, td { padding: 2px 0; }
             .border-t { border-top: 1px solid #ccc; }
@@ -516,8 +525,35 @@ const Sales = () => {
                     );
                   })}
                 </div>
-                <div className="text-right font-bold text-2xl text-primary">
-                  Total: Rs.{calculateTotal().toFixed(0)}
+                
+                {/* Payment Section */}
+                <div className="border-t pt-4 mt-4 space-y-3">
+                  <div className="flex justify-between items-center">
+                    <span className="font-bold text-xl">Total:</span>
+                    <span className="font-bold text-2xl text-primary">Rs.{calculateTotal().toFixed(0)}</span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label>Amount Paid</Label>
+                      <Input
+                        type="number"
+                        step="0.01"
+                        placeholder="Enter paid amount"
+                        value={formData.paid_amount}
+                        onChange={(e) => setFormData({ ...formData, paid_amount: e.target.value })}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Balance</Label>
+                      <div className={`h-10 flex items-center px-3 rounded-md border ${
+                        (calculateTotal() - (parseFloat(formData.paid_amount) || 0)) > 0 
+                          ? 'bg-destructive/10 text-destructive font-bold' 
+                          : 'bg-muted'
+                      }`}>
+                        Rs.{Math.max(0, calculateTotal() - (parseFloat(formData.paid_amount) || 0)).toFixed(0)}
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
 
@@ -535,6 +571,12 @@ const Sales = () => {
                 <div className="flex items-center gap-2">
                   <ShoppingCart className="w-5 h-5 text-primary" />
                   <h3 className="font-bold text-lg">{sale.sale_number}</h3>
+                  {Number(sale.balance || 0) > 0 && (
+                    <Badge variant="destructive">Balance: Rs.{Number(sale.balance).toFixed(0)}</Badge>
+                  )}
+                  {Number(sale.balance || 0) === 0 && Number(sale.paid_amount || 0) > 0 && (
+                    <Badge className="bg-success text-white">Paid</Badge>
+                  )}
                 </div>
                 <p className="text-sm text-muted-foreground mt-1">
                   Customer: <span className="font-medium">{sale.customer?.name || "Walk-in"}</span>
@@ -547,7 +589,10 @@ const Sales = () => {
                 </p>
               </div>
               <div className="flex flex-col items-end gap-2">
-                <p className="text-2xl font-bold text-success">Rs.{Number(sale.total_amount).toFixed(0)}</p>
+                <p className="text-2xl font-bold text-primary">Rs.{Number(sale.total_amount).toFixed(0)}</p>
+                <div className="text-sm text-muted-foreground">
+                  <span className="text-success">Paid: Rs.{Number(sale.paid_amount || 0).toFixed(0)}</span>
+                </div>
                 <div className="flex gap-2">
                   <Button
                     size="sm"

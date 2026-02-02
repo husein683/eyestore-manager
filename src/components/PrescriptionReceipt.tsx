@@ -74,11 +74,27 @@ const PrintCheckbox = ({ label, checked = false }: { label: string; checked?: bo
 );
 
 const PrescriptionReceipt = forwardRef<HTMLDivElement, PrescriptionReceiptProps>(
-  ({ prescription, shopName = "Naeem Optics", shopAddress = "123 Main Street", shopPhone = "+92 300 1234567", shopEmail = "info@naeemoptics.com", serialNumber }, ref) => {
+  ({ prescription, shopName = "Naeem Optics", shopAddress = "Circular-Road, Sheranwala Gate, Near Allied Bank", shopPhone = "+92 300 9839515", shopEmail = "saadk2953@gmail.com", serialNumber }, ref) => {
     // Guard against invalid prescription data
     if (!prescription?.prescription_date) {
       return <div ref={ref} />;
     }
+
+    // Check if NV section should be hidden (when Addition has value but NV fields are empty)
+    const hasAddition = prescription.addition !== null && prescription.addition !== undefined;
+    const hasNvData = (
+      prescription.right_eye_nv_sphere !== null ||
+      prescription.right_eye_nv_cylinder !== null ||
+      prescription.right_eye_nv_axis !== null ||
+      prescription.right_eye_nv_va !== null ||
+      prescription.left_eye_nv_sphere !== null ||
+      prescription.left_eye_nv_cylinder !== null ||
+      prescription.left_eye_nv_axis !== null ||
+      prescription.left_eye_nv_va !== null ||
+      prescription.right_eye_add !== null ||
+      prescription.left_eye_add !== null
+    );
+    const showNvSection = !hasAddition || hasNvData;
 
     const prescriptionDate = format(new Date(prescription.prescription_date), "dd/MM/yyyy");
     const sNo = serialNumber || prescription.id?.slice(0, 6).toUpperCase() || "";
@@ -172,52 +188,70 @@ const PrescriptionReceipt = forwardRef<HTMLDivElement, PrescriptionReceiptProps>
           </div>
         </div>
 
-        {/* N.V. Section - Near Vision */}
-        <div className="mb-4">
-          <h3 className="text-center font-bold text-sm mb-2 underline">N.V.</h3>
-          <div className="flex gap-4">
-            {/* N.V. Table */}
-            <table className="flex-1 border-collapse border border-black text-center text-[10px]">
-              <thead>
-                <tr>
-                  <th className="border border-black py-1.5 px-2 w-12"></th>
-                  <th className="border border-black py-1.5 px-2">Spherical</th>
-                  <th className="border border-black py-1.5 px-2">Cylindrical</th>
-                  <th className="border border-black py-1.5 px-2">Axis</th>
-                  <th className="border border-black py-1.5 px-2">VA</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td className="border border-black py-3 px-2 font-bold">OD</td>
-                  <td className="border border-black py-3 px-2">{formatValue(rightNvSphere)}</td>
-                  <td className="border border-black py-3 px-2">{formatValue(prescription.right_eye_nv_cylinder)}</td>
-                  <td className="border border-black py-3 px-2">{formatAxis(prescription.right_eye_nv_axis)}</td>
-                  <td className="border border-black py-3 px-2">{prescription.right_eye_nv_va || ""}</td>
-                </tr>
-                <tr>
-                  <td className="border border-black py-3 px-2 font-bold">OS</td>
-                  <td className="border border-black py-3 px-2">{formatValue(leftNvSphere)}</td>
-                  <td className="border border-black py-3 px-2">{formatValue(prescription.left_eye_nv_cylinder)}</td>
-                  <td className="border border-black py-3 px-2">{formatAxis(prescription.left_eye_nv_axis)}</td>
-                  <td className="border border-black py-3 px-2">{prescription.left_eye_nv_va || ""}</td>
-                </tr>
-              </tbody>
-            </table>
+        {/* N.V. Section - Near Vision (conditionally shown) */}
+        {showNvSection && (
+          <div className="mb-4">
+            <h3 className="text-center font-bold text-sm mb-2 underline">N.V.</h3>
+            <div className="flex gap-4">
+              {/* N.V. Table */}
+              <table className="flex-1 border-collapse border border-black text-center text-[10px]">
+                <thead>
+                  <tr>
+                    <th className="border border-black py-1.5 px-2 w-12"></th>
+                    <th className="border border-black py-1.5 px-2">Spherical</th>
+                    <th className="border border-black py-1.5 px-2">Cylindrical</th>
+                    <th className="border border-black py-1.5 px-2">Axis</th>
+                    <th className="border border-black py-1.5 px-2">VA</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td className="border border-black py-3 px-2 font-bold">OD</td>
+                    <td className="border border-black py-3 px-2">{formatValue(rightNvSphere)}</td>
+                    <td className="border border-black py-3 px-2">{formatValue(prescription.right_eye_nv_cylinder)}</td>
+                    <td className="border border-black py-3 px-2">{formatAxis(prescription.right_eye_nv_axis)}</td>
+                    <td className="border border-black py-3 px-2">{prescription.right_eye_nv_va || ""}</td>
+                  </tr>
+                  <tr>
+                    <td className="border border-black py-3 px-2 font-bold">OS</td>
+                    <td className="border border-black py-3 px-2">{formatValue(leftNvSphere)}</td>
+                    <td className="border border-black py-3 px-2">{formatValue(prescription.left_eye_nv_cylinder)}</td>
+                    <td className="border border-black py-3 px-2">{formatAxis(prescription.left_eye_nv_axis)}</td>
+                    <td className="border border-black py-3 px-2">{prescription.left_eye_nv_va || ""}</td>
+                  </tr>
+                </tbody>
+              </table>
 
-            {/* NV Options */}
-            <div className="flex flex-col justify-center gap-2 min-w-[100px]">
-              <PrintCheckbox label="Bifocal" checked={prescription.bifocal} />
-              <PrintCheckbox label="Progressive" checked={prescription.progressive} />
-              <div className="flex items-center gap-1 text-[10px] mt-2">
-                <span className="font-semibold">IPD.</span>
-                <span className="border-b border-black inline-block min-w-[40px]">
-                  {prescription.pd_distance || ""}
-                </span>
+              {/* NV Options */}
+              <div className="flex flex-col justify-center gap-2 min-w-[100px]">
+                <PrintCheckbox label="Bifocal" checked={prescription.bifocal} />
+                <PrintCheckbox label="Progressive" checked={prescription.progressive} />
+                <div className="flex items-center gap-1 text-[10px] mt-2">
+                  <span className="font-semibold">IPD.</span>
+                  <span className="border-b border-black inline-block min-w-[40px]">
+                    {prescription.pd_distance || ""}
+                  </span>
+                </div>
               </div>
             </div>
           </div>
-        </div>
+        )}
+
+        {/* IPD and Lens Options when NV is hidden */}
+        {!showNvSection && (
+          <div className="mb-4 flex gap-4">
+            <div className="flex items-center gap-2 text-[11px]">
+              <span className="font-semibold">IPD:</span>
+              <span className="border-b border-black inline-block min-w-[50px]">
+                {prescription.pd_distance || ""}
+              </span>
+            </div>
+            <div className="flex gap-3">
+              <PrintCheckbox label="Bifocal" checked={prescription.bifocal} />
+              <PrintCheckbox label="Progressive" checked={prescription.progressive} />
+            </div>
+          </div>
+        )}
 
         {/* Remarks */}
         <div className="mb-6">

@@ -293,6 +293,36 @@ const Customers = () => {
                 </div>
               </div>
 
+              {/* Balance Summary */}
+              {customerSales.length > 0 && (
+                <div className="p-4 bg-muted/50 rounded-lg">
+                  <div className="grid grid-cols-3 gap-4 text-center">
+                    <div>
+                      <p className="text-sm text-muted-foreground">Total Purchases</p>
+                      <p className="text-xl font-bold text-primary">
+                        Rs.{customerSales.reduce((sum, s) => sum + Number(s.total_amount || 0), 0).toFixed(0)}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground">Total Paid</p>
+                      <p className="text-xl font-bold text-success">
+                        Rs.{customerSales.reduce((sum, s) => sum + Number(s.paid_amount || 0), 0).toFixed(0)}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground">Total Balance</p>
+                      <p className={`text-xl font-bold ${
+                        customerSales.reduce((sum, s) => sum + Number(s.balance || 0), 0) > 0 
+                          ? 'text-destructive' 
+                          : 'text-success'
+                      }`}>
+                        Rs.{customerSales.reduce((sum, s) => sum + Number(s.balance || 0), 0).toFixed(0)}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {/* Receipts/Sales Section */}
               <div className="space-y-3">
                 <h3 className="font-semibold flex items-center gap-2">
@@ -309,7 +339,9 @@ const Customers = () => {
                           <TableHead>Receipt #</TableHead>
                           <TableHead>Date</TableHead>
                           <TableHead>Payment</TableHead>
-                          <TableHead>Amount</TableHead>
+                          <TableHead>Total</TableHead>
+                          <TableHead>Paid</TableHead>
+                          <TableHead>Balance</TableHead>
                           <TableHead className="w-24">Actions</TableHead>
                         </TableRow>
                       </TableHeader>
@@ -319,7 +351,11 @@ const Customers = () => {
                             <TableCell className="font-mono text-sm">{sale.sale_number}</TableCell>
                             <TableCell>{format(new Date(sale.sale_date), "dd/MM/yyyy")}</TableCell>
                             <TableCell className="capitalize">{sale.payment_method || "Cash"}</TableCell>
-                            <TableCell className="font-semibold text-success">Rs.{Number(sale.total_amount).toFixed(0)}</TableCell>
+                            <TableCell className="font-semibold">Rs.{Number(sale.total_amount).toFixed(0)}</TableCell>
+                            <TableCell className="text-success">Rs.{Number(sale.paid_amount || 0).toFixed(0)}</TableCell>
+                            <TableCell className={Number(sale.balance || 0) > 0 ? 'text-destructive font-semibold' : ''}>
+                              Rs.{Number(sale.balance || 0).toFixed(0)}
+                            </TableCell>
                             <TableCell>
                               <Button
                                 size="sm"

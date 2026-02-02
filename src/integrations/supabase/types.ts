@@ -625,33 +625,39 @@ export type Database = {
       }
       sales: {
         Row: {
+          balance: number
           created_at: string
           created_by: string
           customer_id: string | null
           id: string
           notes: string | null
+          paid_amount: number
           payment_method: string | null
           sale_date: string
           sale_number: string
           total_amount: number
         }
         Insert: {
+          balance?: number
           created_at?: string
           created_by: string
           customer_id?: string | null
           id?: string
           notes?: string | null
+          paid_amount?: number
           payment_method?: string | null
           sale_date?: string
           sale_number: string
           total_amount: number
         }
         Update: {
+          balance?: number
           created_at?: string
           created_by?: string
           customer_id?: string | null
           id?: string
           notes?: string | null
+          paid_amount?: number
           payment_method?: string | null
           sale_date?: string
           sale_number?: string

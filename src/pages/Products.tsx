@@ -127,7 +127,31 @@ const Products = () => {
     }
   };
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = async (id: string, productName: string) => {
+    // Check if product is used in any sales
+    const { data: salesData } = await supabase
+      .from("sale_items")
+      .select("id")
+      .eq("product_id", id)
+      .limit(1);
+    
+    if (salesData && salesData.length > 0) {
+      toast.error(`Cannot delete "${productName}" - it has associated sales records`);
+      return;
+    }
+
+    // Check if product is used in any purchase orders
+    const { data: poData } = await supabase
+      .from("purchase_order_items")
+      .select("id")
+      .eq("product_id", id)
+      .limit(1);
+    
+    if (poData && poData.length > 0) {
+      toast.error(`Cannot delete "${productName}" - it has associated purchase orders`);
+      return;
+    }
+
     const { error } = await supabase.from("products").delete().eq("id", id);
     if (error) {
       toast.error("Failed to delete: " + error.message);
@@ -321,7 +345,7 @@ const Products = () => {
                           </AlertDialogHeader>
                           <AlertDialogFooter>
                             <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction onClick={() => handleDelete(product.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                            <AlertDialogAction onClick={() => handleDelete(product.id, product.name)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
                               Delete
                             </AlertDialogAction>
                           </AlertDialogFooter>
