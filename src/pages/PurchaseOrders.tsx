@@ -7,7 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Package, Check, X, Trash2 } from "lucide-react";
+import { Plus, Package, Check, X, Trash2, UserPlus } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -28,12 +28,20 @@ const PurchaseOrders = () => {
   const [suppliers, setSuppliers] = useState<any[]>([]);
   const [products, setProducts] = useState<any[]>([]);
   const [open, setOpen] = useState(false);
+  const [addSupplierOpen, setAddSupplierOpen] = useState(false);
   const [orderItems, setOrderItems] = useState<any[]>([{ product_id: "", quantity: "", unit_price: "" }]);
   const [formData, setFormData] = useState({
     supplier_id: "",
     order_date: new Date().toISOString().split("T")[0],
     expected_delivery_date: "",
     notes: "",
+  });
+  const [newSupplier, setNewSupplier] = useState({
+    name: "",
+    contact_person: "",
+    phone: "",
+    email: "",
+    address: "",
   });
 
   useEffect(() => {
@@ -65,6 +73,29 @@ const PurchaseOrders = () => {
   const fetchSuppliers = async () => {
     const { data } = await supabase.from("suppliers").select("*");
     setSuppliers(data || []);
+  };
+
+  const handleAddSupplier = async () => {
+    if (!newSupplier.name.trim()) {
+      toast.error("Supplier name is required");
+      return;
+    }
+
+    const { data, error } = await supabase
+      .from("suppliers")
+      .insert([newSupplier])
+      .select()
+      .single();
+
+    if (error) {
+      toast.error("Failed to add supplier: " + error.message);
+    } else {
+      toast.success("Supplier added successfully!");
+      setSuppliers([...suppliers, data]);
+      setFormData({ ...formData, supplier_id: data.id });
+      setNewSupplier({ name: "", contact_person: "", phone: "", email: "", address: "" });
+      setAddSupplierOpen(false);
+    }
   };
 
   const fetchProducts = async () => {
@@ -283,7 +314,18 @@ const PurchaseOrders = () => {
             <form onSubmit={handleSubmit} className="space-y-4">
               {/* Supplier Selection at TOP */}
               <div className="space-y-2">
-                <Label className="text-base font-semibold">Supplier *</Label>
+                <div className="flex items-center justify-between">
+                  <Label className="text-base font-semibold">Supplier *</Label>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setAddSupplierOpen(true)}
+                  >
+                    <UserPlus className="w-4 h-4 mr-1" />
+                    Add Supplier
+                  </Button>
+                </div>
                 <Select
                   value={formData.supplier_id}
                   onValueChange={(val) => setFormData({ ...formData, supplier_id: val })}
@@ -299,6 +341,63 @@ const PurchaseOrders = () => {
                   </SelectContent>
                 </Select>
               </div>
+
+              {/* Add Supplier Dialog */}
+              <Dialog open={addSupplierOpen} onOpenChange={setAddSupplierOpen}>
+                <DialogContent className="max-w-md">
+                  <DialogHeader>
+                    <DialogTitle>Add New Supplier</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <Label>Supplier Name *</Label>
+                      <Input
+                        value={newSupplier.name}
+                        onChange={(e) => setNewSupplier({ ...newSupplier, name: e.target.value })}
+                        placeholder="Enter supplier name"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Contact Person</Label>
+                      <Input
+                        value={newSupplier.contact_person}
+                        onChange={(e) => setNewSupplier({ ...newSupplier, contact_person: e.target.value })}
+                        placeholder="Contact person name"
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label>Phone</Label>
+                        <Input
+                          value={newSupplier.phone}
+                          onChange={(e) => setNewSupplier({ ...newSupplier, phone: e.target.value })}
+                          placeholder="Phone number"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Email</Label>
+                        <Input
+                          type="email"
+                          value={newSupplier.email}
+                          onChange={(e) => setNewSupplier({ ...newSupplier, email: e.target.value })}
+                          placeholder="Email address"
+                        />
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Address</Label>
+                      <Textarea
+                        value={newSupplier.address}
+                        onChange={(e) => setNewSupplier({ ...newSupplier, address: e.target.value })}
+                        placeholder="Full address"
+                      />
+                    </div>
+                    <Button type="button" className="w-full" onClick={handleAddSupplier}>
+                      Add Supplier
+                    </Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
 
               {/* Supplier Info Display */}
               {selectedSupplier && (
