@@ -40,6 +40,7 @@ const Prescriptions = () => {
     customer_phone: "",
     customer_email: "",
     prescription_date: new Date().toISOString().split("T")[0],
+    age: "",
     
     // D.V. (Distance Vision) - Right Eye
     right_eye_sphere: "",
@@ -177,6 +178,7 @@ const Prescriptions = () => {
     const prescriptionData = {
       customer_id: customerId,
       prescription_date: formData.prescription_date,
+      age: formData.age ? parseInt(formData.age) : null,
      
       // D.V. Right Eye
       right_eye_sphere: formData.right_eye_sphere ? parseFloat(formData.right_eye_sphere) : null,
@@ -236,6 +238,7 @@ const Prescriptions = () => {
       customer_phone: "",
       customer_email: "",
       prescription_date: new Date().toISOString().split("T")[0],
+      age: "",
       addition: "",
       right_eye_sphere: "",
       right_eye_cylinder: "",
@@ -361,8 +364,8 @@ const Prescriptions = () => {
 
               
 
-              {/* Date and IPD */}
-              <div className="grid grid-cols-2 gap-4">
+              {/* Date, Age and IPD */}
+              <div className="grid grid-cols-3 gap-4">
                 <div className="space-y-2">
                   <Label>Prescription Date *</Label>
                   <Input
@@ -373,7 +376,18 @@ const Prescriptions = () => {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>IPD (Interpupillary Distance) mm</Label>
+                  <Label>Age (Years)</Label>
+                  <Input
+                    type="number"
+                    min="0"
+                    max="150"
+                    value={formData.age}
+                    onChange={(e) => setFormData({ ...formData, age: e.target.value })}
+                    placeholder="e.g., 35"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>IPD (mm)</Label>
                   <Input
                     type="number"
                     step="0.5"
