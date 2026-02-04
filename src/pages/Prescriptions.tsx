@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Plus, Eye, Search, Printer, Trash2 } from "lucide-react";
+import { Plus, Eye, Search, Printer, Trash2, UserPlus } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -34,6 +34,15 @@ const Prescriptions = () => {
   const [selectedPrescription, setSelectedPrescription] = useState<any>(null);
   const [storeSettings, setStoreSettings] = useState<any>(null);
   const [isNewCustomer, setIsNewCustomer] = useState(false);
+  
+  // Add customer dialog
+  const [addCustomerOpen, setAddCustomerOpen] = useState(false);
+  const [newCustomer, setNewCustomer] = useState({
+    name: "",
+    phone: "",
+    email: "",
+    address: "",
+  });
   const [formData, setFormData] = useState({
     customer_id: "",
     customer_name: "",
@@ -279,6 +288,36 @@ const Prescriptions = () => {
     }
   };
 
+  const handleAddCustomer = async () => {
+    if (!newCustomer.name || !newCustomer.phone) {
+      toast.error("Name and phone are required");
+      return;
+    }
+
+    const { data, error } = await supabase
+      .from("customers")
+      .insert([{
+        name: newCustomer.name,
+        phone: newCustomer.phone,
+        email: newCustomer.email || null,
+        address: newCustomer.address || null,
+      }])
+      .select()
+      .single();
+
+    if (error) {
+      toast.error("Failed to add customer: " + error.message);
+    } else {
+      toast.success("Customer added successfully!");
+      setNewCustomer({ name: "", phone: "", email: "", address: "" });
+      setAddCustomerOpen(false);
+      fetchCustomers();
+      // Auto-select the new customer
+      setFormData({ ...formData, customer_id: data.id });
+      setIsNewCustomer(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -305,17 +344,30 @@ const Prescriptions = () => {
               <div className="space-y-2">
                 <div className="flex items-center justify-between mb-2">
                   <Label className="text-base font-semibold">Customer *</Label>
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="outline"
-                    onClick={() => {
-                      setIsNewCustomer(!isNewCustomer);
-                      setFormData({ ...formData, customer_id: "", customer_name: "", customer_phone: "", customer_email: "" });
-                    }}
-                  >
-                    {isNewCustomer ? "Select Existing" : "Add New Customer"}
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      onClick={() => setAddCustomerOpen(true)}
+                    >
+                      <UserPlus className="w-4 h-4 mr-1" />
+                      Add New Customer
+                    </Button>
+                    {isNewCustomer && (
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => {
+                          setIsNewCustomer(false);
+                          setFormData({ ...formData, customer_id: "", customer_name: "", customer_phone: "", customer_email: "" });
+                        }}
+                      >
+                        Select Existing
+                      </Button>
+                    )}
+                  </div>
                 </div>
                 
                 {!isNewCustomer ? (
@@ -839,6 +891,62 @@ const Prescriptions = () => {
           shopEmail={storeSettings?.email}
         />
       </div>
+
+      {/* Add Customer Dialog */}
+      <Dialog open={addCustomerOpen} onOpenChange={setAddCustomerOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <UserPlus className="w-5 h-5 text-primary" />
+              Add New Customer
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label>Customer Name *</Label>
+              <Input
+                value={newCustomer.name}
+                onChange={(e) => setNewCustomer({ ...newCustomer, name: e.target.value })}
+                placeholder="Enter customer name"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Phone *</Label>
+              <Input
+                value={newCustomer.phone}
+                onChange={(e) => setNewCustomer({ ...newCustomer, phone: e.target.value })}
+                placeholder="Enter phone number"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Email (Optional)</Label>
+              <Input
+                type="email"
+                value={newCustomer.email}
+                onChange={(e) => setNewCustomer({ ...newCustomer, email: e.target.value })}
+                placeholder="Enter email"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Address (Optional)</Label>
+              <Input
+                value={newCustomer.address}
+                onChange={(e) => setNewCustomer({ ...newCustomer, address: e.target.value })}
+                placeholder="Enter address"
+              />
+            </div>
+            <div className="flex gap-2 pt-2">
+              <Button onClick={handleAddCustomer} className="flex-1">
+                <UserPlus className="w-4 h-4 mr-2" />
+                Add Customer
+              </Button>
+              <Button variant="outline" onClick={() => setAddCustomerOpen(false)}>
+                Cancel
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

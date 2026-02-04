@@ -6,7 +6,8 @@ import { Card } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { Search, Eye, Printer, FileText, Receipt } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Search, Eye, Printer, FileText, Receipt, CreditCard, DollarSign } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import SaleReceipt from "@/components/SaleReceipt";
@@ -29,6 +30,12 @@ const Customers = () => {
   const [selectedPrescription, setSelectedPrescription] = useState<any>(null);
   const receiptRef = useRef<HTMLDivElement>(null);
   const prescriptionRef = useRef<HTMLDivElement>(null);
+
+  // Payment dialog
+  const [paymentOpen, setPaymentOpen] = useState(false);
+  const [selectedSaleForPayment, setSelectedSaleForPayment] = useState<any>(null);
+  const [paymentAmount, setPaymentAmount] = useState("");
+  const [paymentMethod, setPaymentMethod] = useState("cash");
 
   useEffect(() => {
     fetchCustomers();
@@ -124,6 +131,53 @@ const Customers = () => {
       }
     });
     setPrescriptionReceiptOpen(true);
+  };
+
+  const handleAddPayment = (sale: any) => {
+    setSelectedSaleForPayment(sale);
+    setPaymentAmount("");
+    setPaymentMethod("cash");
+    setPaymentOpen(true);
+  };
+
+  const handleSubmitPayment = async () => {
+    if (!selectedSaleForPayment || !paymentAmount) {
+      toast.error("Please enter a payment amount");
+      return;
+    }
+
+    const amount = parseFloat(paymentAmount);
+    if (isNaN(amount) || amount <= 0) {
+      toast.error("Please enter a valid amount");
+      return;
+    }
+
+    const currentBalance = Number(selectedSaleForPayment.balance || 0);
+    if (amount > currentBalance) {
+      toast.error(`Amount cannot exceed balance of Rs.${currentBalance.toFixed(0)}`);
+      return;
+    }
+
+    const newPaidAmount = Number(selectedSaleForPayment.paid_amount || 0) + amount;
+    const newBalance = currentBalance - amount;
+
+    const { error } = await supabase
+      .from("sales")
+      .update({
+        paid_amount: newPaidAmount,
+        balance: newBalance,
+        payment_method: paymentMethod,
+      })
+      .eq("id", selectedSaleForPayment.id);
+
+    if (error) {
+      toast.error("Failed to add payment: " + error.message);
+    } else {
+      toast.success(`Payment of Rs.${amount.toFixed(0)} added successfully!`);
+      setPaymentOpen(false);
+      // Refresh customer sales
+      handleViewDetails(selectedCustomer);
+    }
   };
 
   const printReceipt = () => {
@@ -357,13 +411,25 @@ const Customers = () => {
                               Rs.{Number(sale.balance || 0).toFixed(0)}
                             </TableCell>
                             <TableCell>
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                onClick={() => handlePrintReceipt(sale)}
-                              >
-                                <Printer className="w-4 h-4" />
-                              </Button>
+                              <div className="flex gap-1">
+                                {Number(sale.balance || 0) > 0 && (
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => handleAddPayment(sale)}
+                                    className="text-primary"
+                                  >
+                                    <DollarSign className="w-4 h-4" />
+                                  </Button>
+                                )}
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={() => handlePrintReceipt(sale)}
+                                >
+                                  <Printer className="w-4 h-4" />
+                                </Button>
+                              </div>
                             </TableCell>
                           </TableRow>
                         ))}
@@ -485,6 +551,77 @@ const Customers = () => {
                 </Button>
               </div>
             </>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Add Payment Dialog */}
+      <Dialog open={paymentOpen} onOpenChange={setPaymentOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <CreditCard className="w-5 h-5 text-primary" />
+              Add Payment
+            </DialogTitle>
+          </DialogHeader>
+          {selectedSaleForPayment && (
+            <div className="space-y-4">
+              <div className="p-4 bg-muted/50 rounded-lg space-y-2">
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Receipt #:</span>
+                  <span className="font-mono">{selectedSaleForPayment.sale_number}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Total Amount:</span>
+                  <span className="font-semibold">Rs.{Number(selectedSaleForPayment.total_amount).toFixed(0)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Already Paid:</span>
+                  <span className="text-success">Rs.{Number(selectedSaleForPayment.paid_amount || 0).toFixed(0)}</span>
+                </div>
+                <div className="flex justify-between border-t pt-2">
+                  <span className="text-muted-foreground font-semibold">Balance Due:</span>
+                  <span className="text-destructive font-bold">Rs.{Number(selectedSaleForPayment.balance || 0).toFixed(0)}</span>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Payment Amount *</Label>
+                <Input
+                  type="number"
+                  value={paymentAmount}
+                  onChange={(e) => setPaymentAmount(e.target.value)}
+                  placeholder={`Max: Rs.${Number(selectedSaleForPayment.balance || 0).toFixed(0)}`}
+                  max={Number(selectedSaleForPayment.balance || 0)}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label>Payment Method</Label>
+                <Select value={paymentMethod} onValueChange={setPaymentMethod}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="cash">Cash</SelectItem>
+                    <SelectItem value="card">Card</SelectItem>
+                    <SelectItem value="bank_transfer">Bank Transfer</SelectItem>
+                    <SelectItem value="easypaisa">Easypaisa</SelectItem>
+                    <SelectItem value="jazzcash">JazzCash</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="flex gap-2 pt-2">
+                <Button onClick={handleSubmitPayment} className="flex-1">
+                  <DollarSign className="w-4 h-4 mr-2" />
+                  Add Payment
+                </Button>
+                <Button variant="outline" onClick={() => setPaymentOpen(false)}>
+                  Cancel
+                </Button>
+              </div>
+            </div>
           )}
         </DialogContent>
       </Dialog>
