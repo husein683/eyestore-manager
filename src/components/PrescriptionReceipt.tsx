@@ -4,6 +4,7 @@ import { format } from "date-fns";
 interface Prescription {
   id: string;
   prescription_date: string;
+  age: number | null;
   customer: { name: string; phone?: string } | null;
   // D.V. Right Eye
   right_eye_sphere: number | null;
@@ -125,7 +126,9 @@ const PrescriptionReceipt = forwardRef<HTMLDivElement, PrescriptionReceiptProps>
         <div className="flex justify-between mb-4 text-[11px] gap-4">
           <div className="flex items-center">
             <span className="font-semibold">Age: </span>
-            <span className="border-b border-black inline-block min-w-[60px] ml-1">______</span>
+            <span className="border-b border-black inline-block min-w-[60px] ml-1">
+              {prescription.age ? `${prescription.age} years` : "______"}
+            </span>
           </div>
           <div className="flex items-center">
             <span className="font-semibold">Date: </span>
