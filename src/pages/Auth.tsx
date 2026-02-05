@@ -38,11 +38,29 @@ const Auth = () => {
 
     if (error) {
       toast.error(error.message);
-    } else {
-      toast.success("Logged in successfully!");
-      navigate("/dashboard");
+      setLoading(false);
+      return;
     }
 
+    // Check if user is approved
+    const { data: { user: authUser } } = await supabase.auth.getUser();
+    if (authUser) {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("is_approved")
+        .eq("id", authUser.id)
+        .single();
+
+      if (!profile?.is_approved) {
+        await supabase.auth.signOut();
+        toast.error("Your account is pending admin approval. Please contact your administrator.");
+        setLoading(false);
+        return;
+      }
+    }
+
+    toast.success("Logged in successfully!");
+    navigate("/dashboard");
     setLoading(false);
   };
 
@@ -64,8 +82,7 @@ const Auth = () => {
     if (error) {
       toast.error(error.message);
     } else {
-      toast.success("Account created successfully!");
-      navigate("/dashboard");
+      toast.success("Account created! Please wait for admin approval before logging in.");
     }
 
     setLoading(false);
