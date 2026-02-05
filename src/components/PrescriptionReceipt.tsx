@@ -81,22 +81,6 @@ const PrescriptionReceipt = forwardRef<HTMLDivElement, PrescriptionReceiptProps>
       return <div ref={ref} />;
     }
 
-    // Check if NV section should be hidden (when Addition has value but NV fields are empty)
-    const hasAddition = prescription.addition !== null && prescription.addition !== undefined;
-    const hasNvData = (
-      prescription.right_eye_nv_sphere !== null ||
-      prescription.right_eye_nv_cylinder !== null ||
-      prescription.right_eye_nv_axis !== null ||
-      prescription.right_eye_nv_va !== null ||
-      prescription.left_eye_nv_sphere !== null ||
-      prescription.left_eye_nv_cylinder !== null ||
-      prescription.left_eye_nv_axis !== null ||
-      prescription.left_eye_nv_va !== null ||
-      prescription.right_eye_add !== null ||
-      prescription.left_eye_add !== null
-    );
-    const showNvSection = !hasAddition || hasNvData;
-
     const prescriptionDate = format(new Date(prescription.prescription_date), "dd/MM/yyyy");
     const sNo = serialNumber || prescription.id?.slice(0, 6).toUpperCase() || "";
 
