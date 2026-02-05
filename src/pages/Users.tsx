@@ -7,7 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Shield, ShieldAlert, UserCheck, UserX } from "lucide-react";
+import { Plus, Shield, ShieldAlert, UserCheck, UserX, KeyRound } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/lib/supabase";
@@ -29,6 +29,7 @@ const Users = () => {
   const [open, setOpen] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [resettingPassword, setResettingPassword] = useState<string | null>(null);
   const { user } = useAuth();
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
@@ -90,6 +91,25 @@ const Users = () => {
     } else {
       toast.success(currentlyApproved ? "User access revoked" : "User approved successfully!");
       fetchUsers();
+    }
+  };
+
+  const handleResetPassword = async (userEmail: string, userName: string) => {
+    setResettingPassword(userEmail);
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(userEmail, {
+        redirectTo: `${window.location.origin}/auth`,
+      });
+
+      if (error) {
+        toast.error("Failed to send reset email: " + error.message);
+      } else {
+        toast.success(`Password reset email sent to ${userName}`);
+      }
+    } catch (error: any) {
+      toast.error("Error sending reset email: " + error.message);
+    } finally {
+      setResettingPassword(null);
     }
   };
 
@@ -292,38 +312,68 @@ const Users = () => {
                     <TableCell>{new Date(userData.created_at).toLocaleDateString()}</TableCell>
                     <TableCell>
                       {userData.id !== user?.id && (
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
-                            <Button
-                              size="icon"
-                              variant="ghost"
-                              className={userData.is_approved ? "text-destructive hover:text-destructive" : "text-green-600 hover:text-green-700"}
-                            >
-                              {userData.is_approved ? <UserX className="w-4 h-4" /> : <UserCheck className="w-4 h-4" />}
-                            </Button>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>
-                                {userData.is_approved ? "Revoke Access?" : "Approve User?"}
-                              </AlertDialogTitle>
-                              <AlertDialogDescription>
-                                {userData.is_approved
-                                  ? `This will prevent ${userData.full_name} from logging in.`
-                                  : `This will allow ${userData.full_name} to log in and access the system.`}
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel>Cancel</AlertDialogCancel>
-                              <AlertDialogAction
-                                onClick={() => handleToggleApproval(userData.id, userData.is_approved)}
-                                className={userData.is_approved ? "bg-destructive text-destructive-foreground hover:bg-destructive/90" : ""}
+                        <div className="flex gap-1">
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button
+                                size="icon"
+                                variant="ghost"
+                                className={userData.is_approved ? "text-destructive hover:text-destructive" : "text-green-600 hover:text-green-700"}
                               >
-                                {userData.is_approved ? "Revoke Access" : "Approve"}
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
+                                {userData.is_approved ? <UserX className="w-4 h-4" /> : <UserCheck className="w-4 h-4" />}
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>
+                                  {userData.is_approved ? "Revoke Access?" : "Approve User?"}
+                                </AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  {userData.is_approved
+                                    ? `This will prevent ${userData.full_name} from logging in.`
+                                    : `This will allow ${userData.full_name} to log in and access the system.`}
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction
+                                  onClick={() => handleToggleApproval(userData.id, userData.is_approved)}
+                                  className={userData.is_approved ? "bg-destructive text-destructive-foreground hover:bg-destructive/90" : ""}
+                                >
+                                  {userData.is_approved ? "Revoke Access" : "Approve"}
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button
+                                size="icon"
+                                variant="ghost"
+                                disabled={resettingPassword === userData.email}
+                              >
+                                <KeyRound className="w-4 h-4" />
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Reset Password?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  This will send a password reset email to {userData.email}. 
+                                  The user will receive a link to set a new password.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction
+                                  onClick={() => handleResetPassword(userData.email, userData.full_name)}
+                                >
+                                  Send Reset Email
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        </div>
                       )}
                     </TableCell>
                   </TableRow>
