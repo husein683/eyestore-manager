@@ -7,11 +7,22 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Shield, ShieldAlert } from "lucide-react";
+import { Plus, Shield, ShieldAlert, UserCheck, UserX } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/lib/supabase";
 import { useNavigate } from "react-router-dom";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 const Users = () => {
   const [users, setUsers] = useState<any[]>([]);
@@ -66,6 +77,20 @@ const Users = () => {
       .order("created_at", { ascending: false });
 
     setUsers(profiles || []);
+  };
+
+  const handleToggleApproval = async (userId: string, currentlyApproved: boolean) => {
+    const { error } = await supabase
+      .from("profiles")
+      .update({ is_approved: !currentlyApproved })
+      .eq("id", userId);
+
+    if (error) {
+      toast.error("Failed to update user status: " + error.message);
+    } else {
+      toast.success(currentlyApproved ? "User access revoked" : "User approved successfully!");
+      fetchUsers();
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -225,13 +250,15 @@ const Users = () => {
                 <TableHead>Email</TableHead>
                 <TableHead>Phone</TableHead>
                 <TableHead>Role</TableHead>
+                <TableHead>Status</TableHead>
                 <TableHead>Created</TableHead>
+                <TableHead className="w-20">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {users.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center text-muted-foreground">
+                  <TableCell colSpan={7} className="text-center text-muted-foreground">
                     No users found. Create your first user!
                   </TableCell>
                 </TableRow>
@@ -257,7 +284,48 @@ const Users = () => {
                         </Badge>
                       ))}
                     </TableCell>
+                    <TableCell>
+                      <Badge variant={userData.is_approved ? "default" : "destructive"}>
+                        {userData.is_approved ? "Approved" : "Pending"}
+                      </Badge>
+                    </TableCell>
                     <TableCell>{new Date(userData.created_at).toLocaleDateString()}</TableCell>
+                    <TableCell>
+                      {userData.id !== user?.id && (
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              className={userData.is_approved ? "text-destructive hover:text-destructive" : "text-green-600 hover:text-green-700"}
+                            >
+                              {userData.is_approved ? <UserX className="w-4 h-4" /> : <UserCheck className="w-4 h-4" />}
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>
+                                {userData.is_approved ? "Revoke Access?" : "Approve User?"}
+                              </AlertDialogTitle>
+                              <AlertDialogDescription>
+                                {userData.is_approved
+                                  ? `This will prevent ${userData.full_name} from logging in.`
+                                  : `This will allow ${userData.full_name} to log in and access the system.`}
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogAction
+                                onClick={() => handleToggleApproval(userData.id, userData.is_approved)}
+                                className={userData.is_approved ? "bg-destructive text-destructive-foreground hover:bg-destructive/90" : ""}
+                              >
+                                {userData.is_approved ? "Revoke Access" : "Approve"}
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      )}
+                    </TableCell>
                   </TableRow>
                 ))
               )}
@@ -270,10 +338,10 @@ const Users = () => {
         <div className="flex gap-3">
           <ShieldAlert className="w-5 h-5 text-warning flex-shrink-0 mt-0.5" />
           <div className="space-y-1">
-            <p className="font-semibold text-warning">Admin Access Only</p>
+            <p className="font-semibold text-warning">User Approval Required</p>
             <p className="text-sm text-muted-foreground">
-              Only administrators can create new users. Public signups are disabled for security.
-              All users must be created by an admin to access the system.
+              New users require admin approval before they can log in. Use the action buttons
+              to approve pending users or revoke access from existing users.
             </p>
           </div>
         </div>

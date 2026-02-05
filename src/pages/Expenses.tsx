@@ -30,6 +30,7 @@ const Expenses = () => {
   const [monthlyReport, setMonthlyReport] = useState<any[]>([]);
   const [selectedMonth, setSelectedMonth] = useState(new Date());
   const [open, setOpen] = useState(false);
+  const [displayLimit, setDisplayLimit] = useState(50);
   const [formData, setFormData] = useState({
     expense_date: format(new Date(), "yyyy-MM-dd"),
     category: "",
@@ -44,14 +45,14 @@ const Expenses = () => {
       fetchExpenses();
       fetchMonthlyReport();
     }
-  }, [user, selectedMonth]);
+  }, [user, selectedMonth, displayLimit]);
 
   const fetchExpenses = async () => {
     const { data, error } = await supabase
       .from("expenses")
       .select("*")
       .order("expense_date", { ascending: false })
-      .limit(50);
+      .limit(displayLimit);
 
     if (error) {
       toast.error("Failed to fetch expenses");
@@ -330,7 +331,27 @@ const Expenses = () => {
 
       {/* Recent Expenses */}
       <Card className="p-4">
-        <h3 className="text-lg font-semibold mb-4">Recent Expenses (Last 50)</h3>
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-lg font-semibold">Recent Expenses</h3>
+          <div className="flex items-center gap-2">
+            <Label className="text-sm text-muted-foreground">Show:</Label>
+            <Select
+              value={String(displayLimit)}
+              onValueChange={(val) => setDisplayLimit(Number(val))}
+            >
+              <SelectTrigger className="w-24">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="10">10</SelectItem>
+                <SelectItem value="25">25</SelectItem>
+                <SelectItem value="50">50</SelectItem>
+                <SelectItem value="100">100</SelectItem>
+                <SelectItem value="200">200</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
         <div className="rounded-md border">
           <Table>
             <TableHeader>
