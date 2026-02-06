@@ -15,9 +15,8 @@ import PurchaseOrders from "./pages/PurchaseOrders";
 import Sales from "./pages/Sales";
 import Analytics from "./pages/Analytics";
 import Prescriptions from "./pages/Prescriptions";
-import Users from "./pages/Users";
+import StaffManagement from "./pages/StaffManagement";
 import Expenses from "./pages/Expenses";
-import Employees from "./pages/Employees";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 
@@ -68,8 +67,7 @@ const App = () => (
               <Route path="analytics" element={<Analytics />} />
               <Route path="prescriptions" element={<Prescriptions />} />
               <Route path="expenses" element={<Expenses />} />
-              <Route path="users" element={<Users />} />
-              <Route path="employees" element={<Employees />} />
+              <Route path="staff" element={<StaffManagement />} />
               <Route path="settings" element={<Settings />} />
             </Route>
             <Route path="*" element={<NotFound />} />

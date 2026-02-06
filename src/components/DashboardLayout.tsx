@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
 import { useAuth } from "@/lib/supabase";
-import { Eye, LayoutDashboard, Package, Users, ShoppingCart, ClipboardList, FileText, TrendingUp, DollarSign, LogOut, Menu, X, UserCog, Receipt, Briefcase, Settings } from "lucide-react";
+import { Eye, LayoutDashboard, Package, Users, ShoppingCart, ClipboardList, FileText, TrendingUp, DollarSign, LogOut, Menu, X, UserCog, Receipt, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -67,12 +67,8 @@ const DashboardLayout = () => {
   }];
   const adminMenuItems = [{
     icon: UserCog,
-    label: "User Management",
-    path: "/dashboard/users"
-  }, {
-    icon: Briefcase,
-    label: "Employee Management",
-    path: "/dashboard/employees"
+    label: "Staff Management",
+    path: "/dashboard/staff"
   }, {
     icon: Settings,
     label: "Store Settings",
