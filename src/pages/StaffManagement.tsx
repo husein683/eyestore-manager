@@ -107,6 +107,16 @@ const StaffManagement = () => {
     else { toast.success(approved ? "Access revoked" : "User approved!"); fetchUsers(); }
   };
 
+  const handleChangeRole = async (userId: string, newRole: "admin" | "employee") => {
+    // Delete existing roles then insert new one
+    const { error: delError } = await supabase.from("user_roles").delete().eq("user_id", userId);
+    if (delError) { toast.error("Failed: " + delError.message); return; }
+    const { error: insError } = await supabase.from("user_roles").insert([{ user_id: userId, role: newRole }]);
+    if (insError) toast.error("Failed: " + insError.message);
+    else toast.success(`Role changed to ${newRole}`);
+    fetchUsers();
+  };
+
   const handleResetPassword = async (email: string, name: string) => {
     setResettingPassword(email);
     const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: `${window.location.origin}/auth` });
@@ -253,12 +263,26 @@ const StaffManagement = () => {
                       <TableCell>{u.email}</TableCell>
                       <TableCell>{u.phone || "-"}</TableCell>
                       <TableCell>
-                        {u.user_roles?.map((ur: any) => (
-                          <Badge key={ur.role} variant={ur.role === "admin" ? "default" : "secondary"} className="mr-1">
-                            {ur.role === "admin" ? <ShieldAlert className="w-3 h-3 mr-1" /> : <Shield className="w-3 h-3 mr-1" />}
-                            {ur.role}
-                          </Badge>
-                        ))}
+                        {u.id === user?.id ? (
+                          u.user_roles?.map((ur: any) => (
+                            <Badge key={ur.role} variant="default" className="mr-1">
+                              <ShieldAlert className="w-3 h-3 mr-1" />{ur.role}
+                            </Badge>
+                          ))
+                        ) : (
+                          <Select
+                            value={u.user_roles?.[0]?.role || "employee"}
+                            onValueChange={(v: "admin" | "employee") => handleChangeRole(u.id, v)}
+                          >
+                            <SelectTrigger className="w-[130px] h-8">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="employee"><div className="flex items-center gap-1"><Shield className="w-3 h-3" />Employee</div></SelectItem>
+                              <SelectItem value="admin"><div className="flex items-center gap-1"><ShieldAlert className="w-3 h-3" />Admin</div></SelectItem>
+                            </SelectContent>
+                          </Select>
+                        )}
                       </TableCell>
                       <TableCell><Badge variant={u.is_approved ? "default" : "destructive"}>{u.is_approved ? "Approved" : "Pending"}</Badge></TableCell>
                       <TableCell>{new Date(u.created_at).toLocaleDateString()}</TableCell>
