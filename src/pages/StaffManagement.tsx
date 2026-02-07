@@ -60,6 +60,7 @@ const StaffManagement = () => {
   const [users, setUsers] = useState<any[]>([]);
   const [createUserOpen, setCreateUserOpen] = useState(false);
   const [resettingPassword, setResettingPassword] = useState<string | null>(null);
+  const [pendingRoleChange, setPendingRoleChange] = useState<{ userId: string; userName: string; newRole: "admin" | "employee" } | null>(null);
   const [userForm, setUserForm] = useState({
     email: "", password: "", full_name: "", phone: "", role: "employee" as "admin" | "employee",
   });
@@ -272,7 +273,10 @@ const StaffManagement = () => {
                         ) : (
                           <Select
                             value={u.user_roles?.[0]?.role || "employee"}
-                            onValueChange={(v: "admin" | "employee") => handleChangeRole(u.id, v)}
+                            onValueChange={(v: "admin" | "employee") => {
+                              const currentRole = u.user_roles?.[0]?.role || "employee";
+                              if (v !== currentRole) setPendingRoleChange({ userId: u.id, userName: u.full_name, newRole: v });
+                            }}
                           >
                             <SelectTrigger className="w-[130px] h-8">
                               <SelectValue />
@@ -342,6 +346,26 @@ const StaffManagement = () => {
               </div>
             </div>
           </Card>
+
+          {/* Role Change Confirmation Dialog */}
+          <AlertDialog open={!!pendingRoleChange} onOpenChange={(open) => { if (!open) setPendingRoleChange(null); }}>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Change User Role?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Are you sure you want to change <span className="font-semibold">{pendingRoleChange?.userName}</span>'s role to <span className="font-semibold">{pendingRoleChange?.newRole}</span>?
+                  {pendingRoleChange?.newRole === "admin" && " This will grant full administrative access."}
+                  {pendingRoleChange?.newRole === "employee" && " This will remove administrative privileges."}
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={() => { if (pendingRoleChange) { handleChangeRole(pendingRoleChange.userId, pendingRoleChange.newRole); setPendingRoleChange(null); } }}>
+                  Confirm
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </TabsContent>
 
         {/* ─── STAFF REGISTER TAB ─── */}
