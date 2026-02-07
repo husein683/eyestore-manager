@@ -126,6 +126,12 @@ const StaffManagement = () => {
     setResettingPassword(null);
   };
 
+  const handleDeleteUser = async (userId: string, userName: string) => {
+    const { data, error } = await supabase.functions.invoke("delete-user", { body: { userId } });
+    if (error || data?.error) toast.error("Failed: " + (data?.error || error?.message));
+    else { toast.success(`${userName} has been deleted`); fetchUsers(); }
+  };
+
   const handleCreateUser = async (e: React.FormEvent) => {
     e.preventDefault();
     const { data: authData, error: signUpError } = await supabase.auth.signUp({
@@ -324,6 +330,21 @@ const StaffManagement = () => {
                                 <AlertDialogFooter>
                                   <AlertDialogCancel>Cancel</AlertDialogCancel>
                                   <AlertDialogAction onClick={() => handleResetPassword(u.email, u.full_name)}>Send Reset Email</AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button size="icon" variant="ghost" className="text-destructive hover:text-destructive"><Trash2 className="w-4 h-4" /></Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>Delete User Account?</AlertDialogTitle>
+                                  <AlertDialogDescription>This will permanently delete <span className="font-semibold">{u.full_name}</span>'s account, including their profile and role. This action cannot be undone.</AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                  <AlertDialogAction className="bg-destructive text-destructive-foreground hover:bg-destructive/90" onClick={() => handleDeleteUser(u.id, u.full_name)}>Delete</AlertDialogAction>
                                 </AlertDialogFooter>
                               </AlertDialogContent>
                             </AlertDialog>
