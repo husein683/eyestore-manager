@@ -105,14 +105,14 @@ All colors MUST be HSL.
     --success: 142 71% 45%;
     --warning: 38 92% 50%;
 
-    --sidebar-background: 220 16% 16%;
-    --sidebar-foreground: 220 13% 91%;
-    --sidebar-primary: 198 93% 59%;
-    --sidebar-primary-foreground: 220 16% 16%;
-    --sidebar-accent: 220 14% 22%;
-    --sidebar-accent-foreground: 0 0% 100%;
-    --sidebar-border: 220 14% 25%;
-    --sidebar-ring: 198 93% 59%;
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 220 26% 14%;
+    --sidebar-primary: 198 93% 45%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 210 40% 94%;
+    --sidebar-accent-foreground: 220 26% 14%;
+    --sidebar-border: 220 13% 88%;
+    --sidebar-ring: 198 93% 45%;
     --chart-1: 199 95% 73%;
     --chart-2: 211 96% 78%;
     --chart-3: 215 20% 65%;
